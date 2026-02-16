@@ -1,22 +1,15 @@
-#include <EEPROM.h>
+#include "Recordes.h"
 
-class Jogador {
-    public:
-        int id{-1};
-        int vitorias{0};
-        int tabuleiro[10][10];
-        Jogador(int num) {
-            id = num;
-        }
-};
+Jogador::Jogador(int num) {
+    id = num;
+    vitorias = lerRecordes();
+}
 
 // Id player, Vitoria, Tabuleiro
 
-int lerRecordes(int jogador_id) {
-    // falta devolver a quantidade de vitórias do jogador em si 
-
+int lerRecordes() {
     int valor_lido{0};
-    int enderenco_inicial{0 + jogador_id};
+    int enderenco_inicial{0};
     
     Serial.print("Read int from EEPROM: ");
     
@@ -27,17 +20,10 @@ int lerRecordes(int jogador_id) {
     return valor_lido;
 }
 
-int salvarNovaVitoria(int jogador_id) {
-    // vitorias_jogador = lerRecordes(jogador); 
-    EEPROM[jogador_id] += 1;
+int salvarNovaVitoria() {
+    EEPROM[0] += 1;
 }
 
 int zerarRecordes() {
-    for (int i = 0 ; i < EEPROM.length() ; i++) {
-        EEPROM.write(i, 0);
-    }
+    EEPROM.write(0, 0);
 }
-
-// Player 1 - 4
-// Player 2 - 0 
-

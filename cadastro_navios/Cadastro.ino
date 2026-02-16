@@ -33,7 +33,7 @@ void cadastro(){
         navios[i].tamanho = tamanhos[i];
         navios[i].vida = tamanhos[i];
         navios[i].vivo = true;
-    }    
+    }  
 }
 
 // 0 -> agua
@@ -74,21 +74,36 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
     }   
 }
 
-void ataque(int linha, int coluna){
-    int valor = tabuleiro[linha][coluna];
+// void ataque(int linha, int coluna){
+//     int valor = tabuleiro[linha][coluna];
 
-    if(valor > 0) {
-        int idNavio = valor-1;
-        navios[idNavio].vida--;
+//     if(valor > 0) {
+//         int idNavio = valor-1;
+//         navios[idNavio].vida--;
 
-        tabuleiro[linha][coluna] = -2; // acertou um navio -> -2
-        Serial.println("Acertou!");
+//         tabuleiro[linha][coluna] = -2; // acertou um navio -> -2
+//         Serial.println("Acertou!");
 
-        if(navios[idNavio].vida == 0) {
-            Serial.println("Navio Afundado!");
-        }
-    } else {
-        tabuleiro[linha][coluna] = -1;
-        Serial.println("Errou!");
+//         if(navios[idNavio].vida == 0) {
+//             Serial.println("Navio Afundado!");
+//         }
+//     } else {
+//         tabuleiro[linha][coluna] = -1;
+//         Serial.println("Errou!");
+//     }
+// }
+
+void CadastroCompletao(){
+
+    cadastro();
+
+    for(int i=0; i < 4; i++){
+        Serial.println(" --- Cadastro ---");
+        Serial.print("Navio ");
+        Serial.print(i);
+        Serial.print(" -> Tamanho = ");
+        Serial.print(navios[i].tamanho);
+        Serial.println("\n Digite a linha:")
     }
 }
+
