@@ -1,3 +1,5 @@
+#include "Cadastro.h"
+
 // void loop(){
 
 //    if(estadoDoJogo == POSICIONAMENTO){
@@ -12,19 +14,19 @@
 // }
 
 
-#define TAM_TABULEIRO 10
+// #define TAM_TABULEIRO 10
 
-struct Navios {
-    int tamanho; // n vou explicar pq vc n eh broco
-    int vida;   //  n vou explicar pq vc n eh broco pt 2
-    int linha;  /* linha e coluna definem a posicao do navio */
-    int coluna; 
-    char orientacao; // se o navio ta na horizontal ou na vertical
-    bool vivo; // pra ver se ta vivo
-};
+// struct Navios {
+//     int tamanho; // n vou explicar pq vc n eh broco
+//     int vida;   //  n vou explicar pq vc n eh broco pt 2
+//     int linha;  /* linha e coluna definem a posicao do navio */
+//     int coluna; 
+//     char orientacao; // se o navio ta na horizontal ou na vertical
+//     bool vivo; // pra ver se ta vivo
+// };
 
 Navios navios[4];
-int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO]; // tabuleiro de teste pra validar codigo
+//int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO]; // tabuleiro de teste pra validar codigo
 
 int tamanhos[4] = {2,3,4,5};
 
@@ -98,12 +100,42 @@ void CadastroCompletao(){
     cadastro();
 
     for(int i=0; i < 4; i++){
-        Serial.println(" --- Cadastro ---");
-        Serial.print("Navio ");
-        Serial.print(i);
-        Serial.print(" -> Tamanho = ");
-        Serial.print(navios[i].tamanho);
-        Serial.println("\n Digite a linha:")
+
+        bool posicionado = false;
+
+        while(!posicionado) {
+            Serial.println(" --- Cadastro ---");
+            Serial.print("Navio ");
+            Serial.print(i);
+            Serial.print(" -> Tamanho = ");
+            Serial.print(navios[i].tamanho);
+
+            Serial.println("\n Digite a linha:");
+            while(!Serial.available());
+            int linha = Serial.parseInt();
+            Serial.read();
+
+            Serial.println("Digite a coluna:");
+            while(!Serial.available());
+            int coluna = Serial.parseInt();
+            Serial.read();
+
+            Serial.println("Digite a coluna(H/V):");
+            while(!Serial.available());
+            char orientacao = Serial.read();
+            Serial.read();
+
+            if(podeColocar(linha, coluna, orientacao, navios[i].tamanho)){
+
+                colocarNavioDeLadinho(i, linha, coluna, orientacao);
+                Serial.println("Navio Posicionado");
+                posicionado = true;
+            }else {
+                Serial.println("Posicao Invalida ladrao");
+            }
+        }
     }
+
+    Serial.println("Todos os navios posicionados");
 }
 

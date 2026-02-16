@@ -1,6 +1,11 @@
+#include <biblioteca/Recordes.h>
+#include <biblioteca/Tela.h>
+#include <biblioteca/Cadastro.h>
+#include <biblioteca/MapearNaviosDada.h>
+#include <biblioteca/Cadastro.h>
+
 #include <Wire.h>
 #include "rgb_lcd.h"
-#include <Recordes.h>
 
 #define UP 2
 #define RIGHT 3
@@ -8,6 +13,8 @@
 #define LEFT 5
 #define CRIVAR 6
 
+int plx = 0, ply = 0;
+int btn = 0;
 
 void setup()
 {
@@ -17,10 +24,8 @@ void setup()
   	pinMode(LEFT, INPUT_PULLUP);
   	pinMode(CRIVAR, INPUT_PULLUP);
 
-    int pl1X = 0, pl1Y = 0;
-    int pl2X = 0, pl2Y = 0;
-    int btn = 0;
-    Jogador jogador1 = Jogador(0);
+
+    Jogador jogador = Jogador(0);
 
     // Como é feita a comunicação direta entre as placas, não existe esse objeto.
     // Jogador jogador2 = Jogador(1);
@@ -33,23 +38,32 @@ void loop()
     //Printa que é a vez do minino 1
     do
     {
+        
         btn = move();
         switch (btn)
         {
         case UP:
-            if(pl1y < 9) pl1Y++;
+            if(plx > 0) plx--;
             break;
         
         case RIGHT:
-            if(pl1y < 9) pl
+            if(ply < 9) ply++;
+            break;
+
+        case DOWN:
+            if(plx < 9) plx++;
+
+        case LEFT:
+            if(ply > 0) ply--;
+            
+        case CRIVAR:
+            btn = 0;
         default:
             break;
         }
-    } while (1);
-    
-
-    //PLAYER 2 JOGA
-    
+    } while (btn);
+    //Função de atacar com as coordenadas pl1y(sendo a coluna) e pl1x(sendo a linha)
+    //Função de cadastro... qualquer porra que precise de coordena
 }
 
 int move(){

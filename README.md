@@ -7,7 +7,7 @@ receberStatusDoTiro()
 
 - Danilo
 iniciarMapaVazio() - X
-registrarTiroRecebido(x, y) 
+registrarTiroRecebido(x, y) - X
 verificarVitoria() - X
 
 - Arthur

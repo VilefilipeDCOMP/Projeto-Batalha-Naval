@@ -1,3 +1,4 @@
+#include <EEPROM.h>
 #include "Recordes.h"
 
 Jogador::Jogador(int num) {
@@ -5,7 +6,7 @@ Jogador::Jogador(int num) {
     vitorias = lerRecordes();
 }
 
-// Id player, Vitoria, Tabuleiro
+// Id player, Vitoria
 
 int lerRecordes() {
     int valor_lido{0};
