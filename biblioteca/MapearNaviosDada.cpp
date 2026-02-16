@@ -1,4 +1,4 @@
-int tabuleiro[10][10];
+//int tabuleiro[10][10];
 const int navio = 1;
 const int hagata = 0;
 

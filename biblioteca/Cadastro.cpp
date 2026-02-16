@@ -14,7 +14,7 @@
 // }
 
 
-// #define TAM_TABULEIRO 10
+#define TAM_TABULEIRO 10
 
 // struct Navios {
 //     int tamanho; // n vou explicar pq vc n eh broco
@@ -26,7 +26,7 @@
 // };
 
 Navios navios[4];
-//int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO]; // tabuleiro de teste pra validar codigo
+int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO]; // tabuleiro de teste pra validar codigo
 
 int tamanhos[4] = {2,3,4,5};
 

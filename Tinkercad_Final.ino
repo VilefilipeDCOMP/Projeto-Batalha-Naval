@@ -24,6 +24,7 @@ void cadastro();
 bool podeColocar(int linha, int coluna, char orientacao, int tamanho);
 void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao);
 void CadastroCompletao();
+void mostrarTabuleiro();
 // ========================================
 // ARQUIVO: MapearNaviosDada.h
 // ========================================
@@ -77,7 +78,7 @@ void cenaPontos();
 // }
 
 
-// #define TAM_TABULEIRO 10
+#define TAM_TABULEIRO 10
 
 // struct Navios {
 //     int tamanho; // n vou explicar pq vc n eh broco
@@ -89,7 +90,7 @@ void cenaPontos();
 // };
 
 Navios navios[4];
-//int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO]; // tabuleiro de teste pra validar codigo
+int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO]; // tabuleiro de teste pra validar codigo
 
 int tamanhos[4] = {2,3,4,5};
 
@@ -206,7 +207,7 @@ void CadastroCompletao(){
 // ========================================
 // ARQUIVO: MapearNaviosDada.cpp
 // ========================================
-int tabuleiro[10][10];
+//int tabuleiro[10][10];
 const int navio = 1;
 const int hagata = 0;
 
@@ -291,6 +292,17 @@ int zerarRecordes() {
 // Tente 32 primeiro. Se não funcionar, mude para 0x27.
 LiquidCrystal_I2C lcd(0x20, 16, 2); 
 
+byte explosao[8] = {
+  B10001,
+  B01010,
+  B00100, // Centro
+  B11111, // Explosão
+  B00100,
+  B01010,
+  B10001,
+  B00000
+};
+
 byte agua[8] = {
   B00000,
   B00000,
@@ -322,6 +334,7 @@ void inicializarTela() {
   lcd.backlight();
   
   // Registrar os desenhos na memória do LCD (Slots 0 a 4)
+  lcd.createChar(2, explosao);
   lcd.createChar(3, agua);
   lcd.createChar(4, missil);
 }
@@ -383,6 +396,94 @@ void cenaPontos() {
   delay(3500);
 }
 
+void cenaXY(int linha, int coluna) {
+  lcd.setCursor(1, 0);
+  lcd.print("Coord. do Tiro");
+  
+  int posInicial{6};
+  
+  lcd.setCursor(posInicial, 1);
+  lcd.print("(");
+  
+  lcd.setCursor(posInicial + 1, 1);
+  lcd.print(linha);
+  
+  lcd.setCursor(posInicial + 2, 1);
+  lcd.print(",");
+  
+  lcd.setCursor(posInicial + 3, 1);
+  lcd.print(coluna);
+  
+  lcd.setCursor(posInicial + 4, 1);
+  lcd.print(")");
+}
+
+void cenaAcertou() {
+  lcd.clear();
+  
+  // Anima o míssil indo da esquerda para a direita
+  for(int i=0; i<12; i++) {
+    // Apaga o rastro do missil (recoloca agua)
+    if(i > 0) {
+      lcd.setCursor(i-1, 1);
+      lcd.write(3); 
+    }
+    
+    // Desenha o missil
+    lcd.setCursor(i, 1);
+    lcd.write(4);
+    
+    delay(150); // Velocidade do tiro
+  }
+  
+  // O míssil atingiu (posição 11)
+  
+  // Efeito piscando (BOOM)
+  for(int k=0; k<3; k++) {
+    lcd.setCursor(11, 1);
+    lcd.write(2); // Desenha explosão
+    lcd.setCursor(12, 1);
+    lcd.write(2); // Desenha explosão
+    
+    lcd.setCursor(4, 0);
+    lcd.print("   KABOOM!!   ");
+    
+    delay(100);
+    lcd.noBacklight(); // Apaga a luz da tela
+    delay(100);
+    lcd.backlight();   // Acende a luz da tela
+  }
+  
+  lcd.clear();
+  lcd.setCursor(2, 0);
+  lcd.print("ALVO  ABATIDO");
+  delay(1000);
+}
+
+void cenaErrou() {
+  lcd.clear();
+  
+  // Anima o míssil indo da esquerda para a direita
+  for(int i=0; i<17; i++) {
+    // Apaga o rastro do missil (recoloca agua)
+    if(i > 0) {
+      lcd.setCursor(i-1, 1);
+      lcd.write(3); 
+    }
+    
+    // Desenha o missil
+    lcd.setCursor(i, 1);
+    lcd.write(4);
+    
+    delay(150); // Velocidade do tiro
+  }
+  
+  lcd.clear();
+  lcd.setCursor(0, 0);
+  lcd.print("ERROU MEU CHEFE!");
+  delay(1000);
+}
+
 // ---------------------------------------------
 
 // void loop()
@@ -407,6 +508,7 @@ void cenaPontos() {
 
 int plx = 0, ply = 0;
 int btn = 0;
+int hitou;
 
 void setup()
 {
@@ -418,6 +520,11 @@ void setup()
 
 
     Jogador jogador = Jogador(0);
+  
+  	inicializarTela();
+    cenaTitulo();
+  
+  	lcd.clear();
 
     // Como é feita a comunicação direta entre as placas, não existe esse objeto.
     // Jogador jogador2 = Jogador(1);
@@ -426,14 +533,17 @@ void setup()
 
 void loop()
 {
-    //PLAYER 1 JOGA
-    //Printa que é a vez do minino 1
+    //PLAYER JOGA
+    //hitou = registrarTiro(infoX, infoY); //SE TOMOU RETORNA 6, SE ERROU RETORNA 5
+    //As variaveis infox e infoy são recebidas pela placa através do serial(ou algo do tipo)
+    //SIDNEI RESOLVE ISSO e PRECISA decidir como dizer quem começa atirando
+    //SIDNEI usa essa merda desse hitou pra informar a outra placa que o tiro dela pegou em mim
+    //cena de acerto ou cena de erro
+
     do
     {
-        
         btn = move();
-        switch (btn)
-        {
+        switch (btn){
         case UP:
             if(plx > 0) plx--;
             break;
@@ -444,18 +554,25 @@ void loop()
 
         case DOWN:
             if(plx < 9) plx++;
+            break;
 
         case LEFT:
             if(ply > 0) ply--;
-            
+            break;
+
         case CRIVAR:
             btn = 0;
+            break;
+            
         default:
             break;
         }
+        cenaXY(plx, ply);
     } while (btn);
-    //Função de atacar com as coordenadas pl1y(sendo a coluna) e pl1x(sendo a linha)
-    //Função de cadastro... qualquer porra que precise de coordena
+
+    
+    //Dá o tiro com as coordenadas (plx, ply)
+    //Estado atual vira espectador
 }
 
 int move(){
@@ -474,7 +591,5 @@ int move(){
     } else if(digitalRead(CRIVAR) == LOW){
         return CRIVAR;
 
-    } else{
-        return -1;
     }
 }

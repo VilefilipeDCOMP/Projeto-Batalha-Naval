@@ -15,6 +15,8 @@
 
 int plx = 0, ply = 0;
 int btn = 0;
+int hitou;
+bool fim;
 
 void setup()
 {
@@ -34,14 +36,26 @@ void setup()
 
 void loop()
 {
-    //PLAYER 1 JOGA
-    //Printa que é a vez do minino 1
-    do
+    //PLAYER JOGA
+    hitou = registrarTiro(/*infoX,*/ /*infoY*/); //SE TOMOU RETORNA 6, SE ERROU RETORNA 5
+    //As variaveis infox e infoy são recebidas pela placa através do serial(ou algo do tipo)
+    //SIDNEI RESOLVE ISSO e PRECISA decidir como dizer quem começa atirando, para não começar registrando um tiro que não foi dado como acontece duas linhas acima
+    //SIDNEI usa essa merda desse hitou pra informar a outra placa que o tiro dela pegou em mim
+    //cena de acerto ou cena de erro
+
+    //Verifica se alguem ganhou
+    if(registrarTiro(infoX, infoY) == 6){
+        fim = todosNaviosAfundados();
+    };
+
+    if(fim){
+        //cena de vitoria 
+        while(1);
+    }
+    
     {
-        
         btn = move();
-        switch (btn)
-        {
+        switch (btn){
         case UP:
             if(plx > 0) plx--;
             break;
@@ -52,18 +66,23 @@ void loop()
 
         case DOWN:
             if(plx < 9) plx++;
+            break;
 
         case LEFT:
             if(ply > 0) ply--;
-            
+            break;
+
         case CRIVAR:
             btn = 0;
+            break;
+            
         default:
             break;
         }
+        cenaXY(plx, ply);
     } while (btn);
-    //Função de atacar com as coordenadas pl1y(sendo a coluna) e pl1x(sendo a linha)
-    //Função de cadastro... qualquer porra que precise de coordena
+    //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
+    //Estado atual vira espectador
 }
 
 int move(){
@@ -82,7 +101,5 @@ int move(){
     } else if(digitalRead(CRIVAR) == LOW){
         return CRIVAR;
 
-    } else{
-        return -1;
     }
 }
