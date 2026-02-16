@@ -5,7 +5,7 @@
 // Tente 32 primeiro. Se não funcionar, mude para 0x27.
 LiquidCrystal_I2C lcd(0x20, 16, 2); 
 
-byte explosao[8] = {
+byte explosao_tela[8] = {
   B10001,
   B01010,
   B00100, // Centro
@@ -16,7 +16,7 @@ byte explosao[8] = {
   B00000
 };
 
-byte agua[8] = {
+byte agua_tela[8] = {
   B00000,
   B00000,
   B00000,
@@ -27,7 +27,7 @@ byte agua[8] = {
   B10101 // Ondinhas
 };
 
-byte missil[8] = {
+byte missil_tela[8] = {
   B00000,
   B00000,
   B00110, // Corpo do missil
@@ -47,9 +47,9 @@ void inicializarTela() {
   lcd.backlight();
   
   // Registrar os desenhos na memória do LCD (Slots 0 a 4)
-  lcd.createChar(2, explosao);
-  lcd.createChar(3, agua);
-  lcd.createChar(4, missil);
+  lcd.createChar(2, explosao_tela);
+  lcd.createChar(3, agua_tela);
+  lcd.createChar(4, missil_tela);
 }
 
 // ---------------------------------------------

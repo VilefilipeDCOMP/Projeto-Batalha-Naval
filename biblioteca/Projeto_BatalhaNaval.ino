@@ -20,6 +20,8 @@ bool fim;
 
 void setup()
 {
+    Serial.begin(9600);
+
     pinMode(UP, INPUT_PULLUP);
   	pinMode(RIGHT, INPUT_PULLUP);
   	pinMode(DOWN, INPUT_PULLUP);
@@ -29,29 +31,36 @@ void setup()
 
     Jogador jogador = Jogador(0);
 
+    iniciarMapaVazio();
+    CadastroCompletao();
+    // funcao de sidnei
+    registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
+    //mostrarTabuleiro(); 
+
     // Como é feita a comunicação direta entre as placas, não existe esse objeto.
     // Jogador jogador2 = Jogador(1);
 
 }
 
+
 void loop()
 {
     //PLAYER JOGA
-    hitou = registrarTiro(/*infoX,*/ /*infoY*/); //SE TOMOU RETORNA 6, SE ERROU RETORNA 5
+    //hitou = registrarTiro(/*infoX,*/ /*infoY*/); //SE TOMOU RETORNA 6, SE ERROU RETORNA 5
     //As variaveis infox e infoy são recebidas pela placa através do serial(ou algo do tipo)
     //SIDNEI RESOLVE ISSO e PRECISA decidir como dizer quem começa atirando, para não começar registrando um tiro que não foi dado como acontece duas linhas acima
     //SIDNEI usa essa merda desse hitou pra informar a outra placa que o tiro dela pegou em mim
     //cena de acerto ou cena de erro
 
     //Verifica se alguem ganhou
-    if(registrarTiro(infoX, infoY) == 6){
-        fim = todosNaviosAfundados();
-    };
+    // if(registrarTiro(infoX, infoY) == 6){
+    //     fim = todosNaviosAfundados();
+    // };
 
-    if(fim){
-        //cena de vitoria 
-        while(1);
-    }
+    // if(fim){
+    //     //cena de vitoria 
+    //     while(1);
+    // }
     
     {
         btn = move();

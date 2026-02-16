@@ -7,28 +7,26 @@
 // === 1. DECLARAÇÕES (.h) ===
 
 // ========================================
-// ARQUIVO: Cadastro.h
+// ARQUIVO: Cadastro_mapear.h
 // ========================================
 #define TAM_TABULEIRO 10
 
 struct Navios {
-    int tamanho; // n vou explicar pq vc n eh broco
-    int vida;   //  n vou explicar pq vc n eh broco pt 2
-    int linha;  /* linha e coluna definem a posicao do navio */
-    int coluna; 
-    char orientacao; // se o navio ta na horizontal ou na vertical
-    bool vivo; // pra ver se ta vivo
+    int tamanho;
+    bool vivo;
+    int vida;
+    int linha;
+    int coluna;
+    char orientacao;
 };
 
+void iniciarMapaVazio();
 void cadastro();
 bool podeColocar(int linha, int coluna, char orientacao, int tamanho);
+
 void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao);
 void CadastroCompletao();
 void mostrarTabuleiro();
-// ========================================
-// ARQUIVO: MapearNaviosDada.h
-// ========================================
-void iniciarMapaVazio();
 bool todosNaviosAfundados();
 int registrarTiro(int x, int y);
 // ========================================
@@ -61,62 +59,50 @@ void cenaPontos();
 // === 2. IMPLEMENTAÇÕES (.cpp) ===
 
 // ========================================
-// ARQUIVO: Cadastro.cpp
+// ARQUIVO: Cadastro_mapear.cpp
 // ========================================
 
-// void loop(){
-
-//    if(estadoDoJogo == POSICIONAMENTO){
-//        // cadastrar navios
-//    }
-
-//    else if(estadoDoJogo == JOGANDO){
-//        // receber tiro
-//        // verificar acerto
-//        // atualizar vidas
-//    }
-// }
-
-
-#define TAM_TABULEIRO 10
-
+// // struct
 // struct Navios {
-//     int tamanho; // n vou explicar pq vc n eh broco
-//     int vida;   //  n vou explicar pq vc n eh broco pt 2
-//     int linha;  /* linha e coluna definem a posicao do navio */
-//     int coluna; 
-//     char orientacao; // se o navio ta na horizontal ou na vertical
-//     bool vivo; // pra ver se ta vivo
+//     int tamanho;
+//     bool vivo;
+//     int linha;
+//     int coluna;
+//     char orientacao;
 // };
 
+
 Navios navios[4];
-int tabuleiro[TAM_TABULEIRO][TAM_TABULEIRO]; // tabuleiro de teste pra validar codigo
+int tamanhos[4] = {2, 3, 4, 5};
+int tabuleiro[10][10]; 
 
-int tamanhos[4] = {2,3,4,5};
+const int navio = 1;
+const int agua = 0;
 
-void cadastro(){
-    for(int i=0; i < 4; i++) {
+void iniciarMapaVazio() {
+    for(int i = 0; i < 10; i++){
+        for(int j = 0; j < 10; j++){
+            tabuleiro[i][j] = agua; // Zera tudo (água)
+        }
+    }
+}
+
+void cadastro() {
+    for(int i = 0; i < 4; i++) {
         navios[i].tamanho = tamanhos[i];
         navios[i].vida = tamanhos[i];
         navios[i].vivo = true;
     }  
 }
 
-// 0 -> agua
-// 1 -> navio
-// -1 -> tiro na agua
-// -2 -> navio atingido
-
-bool podeColocar(int linha, int coluna, char orientacao, int tamanho){
+bool podeColocar(int linha, int coluna, char orientacao, int tamanho) {
     if(orientacao == 'H') {
-        if(coluna + tamanho > TAM_TABULEIRO) return false;
-
-        for(int i =0; i < tamanho; i++){
-            //vou usar o tabuleiro teste
+        if(coluna + tamanho > 10) return false;
+        for(int i = 0; i < tamanho; i++){
             if(tabuleiro[linha][coluna+i] != 0) return false;
         }
     } else {
-        if(linha + tamanho > TAM_TABULEIRO) return false;
+        if(linha + tamanho > 10) return false;
         for(int i = 0; i < tamanho; i++){
             if(tabuleiro[linha+i][coluna] != 0) return false;
         }        
@@ -129,130 +115,124 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
     navios[id].coluna = coluna;
     navios[id].orientacao = orientacao;
 
-    for(int i=0; i < navios[id].tamanho; i++){
-
-
+    for(int i = 0; i < navios[id].tamanho; i++){
         if(orientacao == 'H'){
-            tabuleiro[linha][coluna+i] = id+1;
+            tabuleiro[linha][coluna+i] = id + 1; // Usa id+1 para diferenciar os navios no mapa
         }else{
-            tabuleiro[linha+i][coluna] = id+1;
+            tabuleiro[linha+i][coluna] = id + 1;
         }
     }   
 }
 
-// void ataque(int linha, int coluna){
-//     int valor = tabuleiro[linha][coluna];
-
-//     if(valor > 0) {
-//         int idNavio = valor-1;
-//         navios[idNavio].vida--;
-
-//         tabuleiro[linha][coluna] = -2; // acertou um navio -> -2
-//         Serial.println("Acertou!");
-
-//         if(navios[idNavio].vida == 0) {
-//             Serial.println("Navio Afundado!");
-//         }
-//     } else {
-//         tabuleiro[linha][coluna] = -1;
-//         Serial.println("Errou!");
-//     }
-// }
-
-void CadastroCompletao(){
-
+void CadastroCompletao() {
     cadastro();
 
-    for(int i=0; i < 4; i++){
-
+    for(int i = 0; i < 4; i++){
         bool posicionado = false;
 
         while(!posicionado) {
             Serial.println(" --- Cadastro ---");
             Serial.print("Navio ");
-            Serial.print(i);
+            Serial.print(i + 1);
             Serial.print(" -> Tamanho = ");
             Serial.print(navios[i].tamanho);
 
-            Serial.println("\n Digite a linha:");
+            Serial.println("\n Digite a linha (0 a 9):");
             while(!Serial.available());
             int linha = Serial.parseInt();
-            Serial.read();
+            Serial.read(); // Limpa o buffer
 
-            Serial.println("Digite a coluna:");
+            Serial.println("Digite a coluna (0 a 9):");
             while(!Serial.available());
             int coluna = Serial.parseInt();
             Serial.read();
 
-            Serial.println("Digite a coluna(H/V):");
+            Serial.println("Digite a orientacao (H/V):");
             while(!Serial.available());
             char orientacao = Serial.read();
             Serial.read();
 
             if(podeColocar(linha, coluna, orientacao, navios[i].tamanho)){
-
                 colocarNavioDeLadinho(i, linha, coluna, orientacao);
-                Serial.println("Navio Posicionado");
+                Serial.println("Navio Posicionado"); // BOTAR NO LCD
                 posicionado = true;
-            }else {
-                Serial.println("Posicao Invalida ladrao");
+                if(navios[i].tamanho != 5)
+                    mostrarTabuleiro();
+            } else {
+                Serial.println("Posicao Invalida ladrao"); // BOTAR NO LCD
             }
         }
     }
-
-    Serial.println("Todos os navios posicionados");
+    Serial.println("Todos os navios posicionados"); // BOTAR NO LCD
 }
 
+void mostrarTabuleiro() {
+    Serial.println("   0 1 2 3 4 5 6 7 8 9");
+    for (int i = 0; i < 10; i++) {
+        Serial.print(i);
+        Serial.print("  ");
 
-// ========================================
-// ARQUIVO: MapearNaviosDada.cpp
-// ========================================
-//int tabuleiro[10][10];
-const int navio = 1;
-const int hagata = 0;
-
-void iniciarMapaVazio(){
-    for(int i = 0;i < 10; i++){
-        for(int j = 0;j < 10; j++){
-            tabuleiro[i][j] = hagata;
+        for (int j = 0; j < 10; j++) {
+            if (tabuleiro[i][j] == 0) {
+                Serial.print("~ ");   // água
+            } else {
+                Serial.print(tabuleiro[i][j]);
+                Serial.print(" ");
+            }
         }
+        Serial.println();
     }
-};
+    Serial.println();
+}
 
-bool todosNaviosAfundados(){
-    for(int i = 0;i < 10; i++){
+bool todosNaviosAfundados() {
+    for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
-            if(tabuleiro[i][j] == navio) return false;//ainda tem navio nessa mizera
+            if(tabuleiro[i][j] == navio) return false; // Se achar qualquer '1', o jogo continua
         }
     }
-    return true;//ganhou, parabens moral
-};
+    return true; // Ganhou, parabéns moral
+}
 
 // 0 -> agua
-// 1 -> navio
-// 2 -> tiro na agua
-// 3 -> navio atingido
-
-int registrarTiro(int x, int y){
+// 1 a 4 -> navios
+// 5 -> tiro na agua (mudei para 20 para não confundir com o ID do navio 2)
+// 6 -> navio atingido (mudei para 30 para não confundir com o ID do navio 3)
+int registrarTiro(int x, int y) {
     if(x < 10 && x >= 0 && y < 10 && y >= 0){
-        if(tabuleiro[x][y] == navio){
-            tabuleiro[x][y] = 3;//navio atingido
+        // Se acertou um navio (valores de 1 a 4)
+        if(tabuleiro[x][y] > 0 && tabuleiro[x][y] < 5){
+            tabuleiro[x][y] = 6; // navio atingido
             Serial.println("Fez uma pra Deus ver pelo menos!");
-            return 3;
-            }
-        else{
-            tabuleiro[x][y] = 2;//tiro na agua
-            Serial.println("Rapaz, tu é ruim viu, errou o tiro");
-            return 2;
+            return 6;
+        }
+        else if (tabuleiro[x][y] == 0) {
+            tabuleiro[x][y] = 5; // tiro na agua
+            Serial.println("Rapaz, tu eh ruim viu, errou o tiro");
+            return 5;
         }
     }
-    else{
-        Serial.println("Tu é burro ou o que? Tiro fora do tabuleiro ou colocou numero negativo");
+    else {
+        Serial.println("Tu eh burro ou o que? Tiro fora do tabuleiro ou colocou numero negativo");
         return -1;
     }
-    return 0;//tecnicamente isso nao é pra acontecer, mas é so pra compilar direitinho}
+    return 0; 
 }
 
+
+// void setup() {
+//     Serial.begin(9600);
+//     iniciarMapaVazio();
+//     CadastroCompletao();
+//     // funcao de sidnei
+//     registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
+    
+//     //mostrarTabuleiro(); 
+// }
+
+// void loop() {
+//     // A lógica de turnos virá aqui depois
+// }
 // ========================================
 // ARQUIVO: Recordes.cpp
 // ========================================
@@ -292,7 +272,7 @@ int zerarRecordes() {
 // Tente 32 primeiro. Se não funcionar, mude para 0x27.
 LiquidCrystal_I2C lcd(0x20, 16, 2); 
 
-byte explosao[8] = {
+byte explosao_tela[8] = {
   B10001,
   B01010,
   B00100, // Centro
@@ -303,7 +283,7 @@ byte explosao[8] = {
   B00000
 };
 
-byte agua[8] = {
+byte agua_tela[8] = {
   B00000,
   B00000,
   B00000,
@@ -314,7 +294,7 @@ byte agua[8] = {
   B10101 // Ondinhas
 };
 
-byte missil[8] = {
+byte missil_tela[8] = {
   B00000,
   B00000,
   B00110, // Corpo do missil
@@ -334,9 +314,9 @@ void inicializarTela() {
   lcd.backlight();
   
   // Registrar os desenhos na memória do LCD (Slots 0 a 4)
-  lcd.createChar(2, explosao);
-  lcd.createChar(3, agua);
-  lcd.createChar(4, missil);
+  lcd.createChar(2, explosao_tela);
+  lcd.createChar(3, agua_tela);
+  lcd.createChar(4, missil_tela);
 }
 
 // ---------------------------------------------
@@ -509,9 +489,12 @@ void cenaErrou() {
 int plx = 0, ply = 0;
 int btn = 0;
 int hitou;
+bool fim;
 
 void setup()
 {
+    Serial.begin(9600);
+
     pinMode(UP, INPUT_PULLUP);
   	pinMode(RIGHT, INPUT_PULLUP);
   	pinMode(DOWN, INPUT_PULLUP);
@@ -520,27 +503,38 @@ void setup()
 
 
     Jogador jogador = Jogador(0);
-  
-  	inicializarTela();
-    cenaTitulo();
-  
-  	lcd.clear();
+
+    iniciarMapaVazio();
+    CadastroCompletao();
+    // funcao de sidnei
+    registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
+    //mostrarTabuleiro(); 
 
     // Como é feita a comunicação direta entre as placas, não existe esse objeto.
     // Jogador jogador2 = Jogador(1);
 
 }
 
+
 void loop()
 {
     //PLAYER JOGA
-    //hitou = registrarTiro(infoX, infoY); //SE TOMOU RETORNA 6, SE ERROU RETORNA 5
+    //hitou = registrarTiro(/*infoX,*/ /*infoY*/); //SE TOMOU RETORNA 6, SE ERROU RETORNA 5
     //As variaveis infox e infoy são recebidas pela placa através do serial(ou algo do tipo)
-    //SIDNEI RESOLVE ISSO e PRECISA decidir como dizer quem começa atirando
+    //SIDNEI RESOLVE ISSO e PRECISA decidir como dizer quem começa atirando, para não começar registrando um tiro que não foi dado como acontece duas linhas acima
     //SIDNEI usa essa merda desse hitou pra informar a outra placa que o tiro dela pegou em mim
     //cena de acerto ou cena de erro
 
-    do
+    //Verifica se alguem ganhou
+    // if(registrarTiro(infoX, infoY) == 6){
+    //     fim = todosNaviosAfundados();
+    // };
+
+    // if(fim){
+    //     //cena de vitoria 
+    //     while(1);
+    // }
+    
     {
         btn = move();
         switch (btn){
@@ -569,9 +563,7 @@ void loop()
         }
         cenaXY(plx, ply);
     } while (btn);
-
-    
-    //Dá o tiro com as coordenadas (plx, ply)
+    //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
     //Estado atual vira espectador
 }
 
