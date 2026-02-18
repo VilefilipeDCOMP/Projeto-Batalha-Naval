@@ -8,7 +8,7 @@ void conectarPlacas() {
     serialPlaca.begin(2400);   // 4800 baud: mais confiável no SoftwareSerial do Tinkercad
     serialPlaca.listen();       // Garante que esta porta SoftwareSerial está ativa
 
-    Serial.println(F("Aguardando conexao com a outra placa..."));
+    // Serial.println(F("Aguardando conexao com a outra placa..."));
 
     bool conectado = false;
     unsigned long ultimoEnvio = 0;
@@ -54,13 +54,13 @@ void conectarPlacas() {
         serialPlaca.read();
     }
 
-    // Prints só DEPOIS de sair do loop
-    if (meuTurno) {
-        Serial.println(F("Conectado! Voce ataca primeiro."));
-    } else {
-        Serial.println(F("Conectado! Adversario ataca primeiro."));
-    }
-    Serial.println(F("=== JOGO INICIADO ==="));
+    // // Prints só DEPOIS de sair do loop
+    // if (meuTurno) {
+    //     Serial.println(F("Conectado! Voce ataca primeiro."));
+    // } else {
+    //     Serial.println(F("Conectado! Adversario ataca primeiro."));
+    // }
+    // Serial.println(F("=== JOGO INICIADO ==="));
 }
 
 
@@ -82,12 +82,12 @@ void enviarTiro(int x, int y) {
 }
 
 int receberStatusDoTiro() {
-    printS("Aguardando resposta do tiro...");
+    //printS("Aguardando resposta do tiro...");
     
     unsigned long inicio = millis();
     while (!serialPlaca.available()) {
         if (millis() - inicio > 30000) {
-            printS("TIMEOUT! Sem resposta da outra placa.");
+            // printS("TIMEOUT! Sem resposta da outra placa.");
             return -1;
         }
     }
@@ -96,15 +96,15 @@ int receberStatusDoTiro() {
     resposta.trim();
     
     if (resposta == "HIT") {
-        printS("Status: ACERTOU!");
+        // printS("Status: ACERTOU!");
         return 6;
     } 
     else if (resposta == "MISS") {
-        printS("Status: ERROU!");
+        // printS("Status: ERROU!");
         return 5;
     } 
     else if (resposta == "WIN") {
-        printS("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
+        // printS("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
         return -1;
     }
     
@@ -114,12 +114,12 @@ int receberStatusDoTiro() {
 }
 
 bool receberTiroAdversario(int &x, int &y) {
-    printS("Aguardando tiro do adversario...");
+    //printS("Aguardando tiro do adversario...");
 
     unsigned long inicio = millis();
     while (!serialPlaca.available()) {
         if (millis() - inicio > 60000) {
-            printS("TIMEOUT! Adversario demorou demais.");
+            // printS("TIMEOUT! Adversario demorou demais.");
             return false;
         }
     }
@@ -135,17 +135,17 @@ bool receberTiroAdversario(int &x, int &y) {
             x = coords.substring(0, virgula).toInt();
             y = coords.substring(virgula + 1).toInt();
             
-            Serial.print("Tiro recebido -> (");
-            Serial.print(x);
-            Serial.print(",");
-            Serial.print(y);
-            printS(")");
+            // printS("Tiro recebido -> (");
+            // Serial.print(x);
+            // printS(",");
+            // Serial.print(y);
+            // printS(")");
             
             return true;
         }
     }
     
-    Serial.print("Mensagem invalida recebida: ");
+    printS("Mensagem invalida recebida: ");
     Serial.print(msg);
     return false;
 }
@@ -154,18 +154,18 @@ void enviarStatusDoTiro(int resultado) {
     if (resultado == 6) {
         if (todosNaviosAfundados()) {
             serialPlaca.println("WIN");
-            printS("Enviado: WIN - Todos os seus navios foram afundados!");
+            // printS("Enviado: WIN - Todos os seus navios foram afundados!");
         } else {
             serialPlaca.println("HIT");
-            printS("Enviado: HIT");
+            // printS("Enviado: HIT");
         }
     } 
     else if (resultado == 5) {
         serialPlaca.println("MISS");
-        printS("Enviado: MISS");
+        // printS("Enviado: MISS");
     }
     else {
         serialPlaca.println("MISS");
-        printS("Enviado: MISS (tiro invalido/repetido)");
+        // printS("Enviado: MISS (tiro invalido/repetido)");
     }
 }

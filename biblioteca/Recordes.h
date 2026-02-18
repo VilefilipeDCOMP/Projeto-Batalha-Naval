@@ -8,8 +8,8 @@ class Jogador {
         Jogador(int num);
 };
 
-int lerRecordes();
-int salvarNovaVitoria();
+int lerRecordes(int jogador_id);
+int salvarNovaVitoria(int jogador_id);
 int zerarRecordes();
 
 #endif

@@ -95,8 +95,8 @@ void cenaPontos() {
   
   lcd.setCursor(1, 0);
   lcd.print("Frota  Aliada");
-  lcd.setCursor(6, 1);
-  lcd.print("555");
+  lcd.setCursor(7, 1);
+  lcd.print(lerRecordes(0));
   
   delay(3500);
     
@@ -104,8 +104,8 @@ void cenaPontos() {
   
   lcd.setCursor(1, 0);
   lcd.print("Frota  Inimiga");
-  lcd.setCursor(6, 1);
-  lcd.print("111");
+  lcd.setCursor(7, 1);
+  lcd.print(lerRecordes(1));
 
   delay(3500);
 

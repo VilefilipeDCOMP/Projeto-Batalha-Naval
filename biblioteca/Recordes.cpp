@@ -3,16 +3,12 @@
 
 Jogador::Jogador(int num) {
     id = num;
-    vitorias = lerRecordes();
+    vitorias = lerRecordes(num);
 }
 
-// Id player, Vitoria
-
-int lerRecordes() {
+int lerRecordes(int jogador_id) {
     int valor_lido{0};
-    int enderenco_inicial{0};
-    
-    Serial.print("Read int from EEPROM: ");
+    int enderenco_inicial{sizeof(int) * jogador_id};
     
     EEPROM.get(enderenco_inicial, valor_lido);
     
@@ -21,10 +17,18 @@ int lerRecordes() {
     return valor_lido;
 }
 
-int salvarNovaVitoria() {
-    EEPROM[0] += 1;
+int salvarNovaVitoria(int jogador_id) {
+    // vitorias_jogador = lerRecordes(jogador); 
+    // EEPROM[jogador_id] += 1;
+
+    int valor_atual{lerRecordes(jogador_id)};
+    int enderenco_inicial{sizeof(int) * jogador_id};
+
+    EEPROM.put(enderenco_inicial, valor_atual + 1);
 }
 
 int zerarRecordes() {
-    EEPROM.write(0, 0);
+    for (int i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0);
+    }
 }

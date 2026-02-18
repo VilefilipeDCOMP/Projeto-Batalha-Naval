@@ -13,7 +13,8 @@
 
 Navios navios[4];
 int tamanhos[4] = {2, 3, 4, 5};
-int8_t tabuleiro[10][10]; 
+int8_t tabuleiroBarco[10][10];
+int8_t tabuleiroTiro[10][10]; 
 
 const int navio = 1;
 const int agua = 0;
@@ -21,7 +22,8 @@ const int agua = 0;
 void iniciarMapaVazio() {
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
-            tabuleiro[i][j] = agua; // Zera tudo (água)
+            tabuleiroBarco[i][j] = agua; // Zera tudo (água)
+            tabuleiroTiro[i][j] = agua;
         }
     }
     // printS("Mapa Pronto!");
@@ -39,12 +41,12 @@ bool podeColocar(int linha, int coluna, char orientacao, int tamanho) {
     if(orientacao == 'H') {
         if(coluna + tamanho > 10) return false;
         for(int i = 0; i < tamanho; i++){
-            if(tabuleiro[linha][coluna+i] != 0) return false;
+            if(tabuleiroBarco[linha][coluna+i] != 0) return false;
         }
     } else {
         if(linha + tamanho > 10) return false;
         for(int i = 0; i < tamanho; i++){
-            if(tabuleiro[linha+i][coluna] != 0) return false;
+            if(tabuleiroBarco[linha+i][coluna] != 0) return false;
         }        
     }
     return true;
@@ -57,9 +59,9 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
 
     for(int i = 0; i < navios[id].tamanho; i++){
         if(orientacao == 'H'){
-            tabuleiro[linha][coluna+i] = id + 1; // Usa id+1 para diferenciar os navios no mapa
+            tabuleiroBarco[linha][coluna+i] = id + 1; // Usa id+1 para diferenciar os navios no mapa
         }else{
-            tabuleiro[linha+i][coluna] = id + 1;
+            tabuleiroBarco[linha+i][coluna] = id + 1;
         }
     }   
 }
@@ -67,8 +69,7 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
 void CadastroCompletao() {
     cadastro();
 
-    // for(int i = 0; i < 4; i++){ // DEBUG: ALTEREI PARA DEBUG
-    for(int i = 0; i < 1; i++){
+    for(int i = 0; i < 4; i++){
         bool posicionado = false;
 
         while(!posicionado) {
@@ -104,16 +105,37 @@ void CadastroCompletao() {
 }
 
 void mostrarTabuleiro() {
+    Serial.println(F("\nTabuleiro de Barco"));
     Serial.println("\n   0 1 2 3 4 5 6 7 8 9");
     for (int i = 0; i < 10; i++) {
         Serial.print(i);
         Serial.print("  ");
 
         for (int j = 0; j < 10; j++) {
-            if (tabuleiro[i][j] == 0) {
+            if (tabuleiroBarco[i][j] == 0) {
                 Serial.print(F("~ "));   // água
             } else {
-                Serial.print(tabuleiro[i][j]);
+                Serial.print(tabuleiroBarco[i][j]);
+                Serial.print(F(" "));
+            }
+        }
+        Serial.println();
+    }
+    Serial.println();
+}
+
+void mostrarTabuleiroTiro() {
+    Serial.println(F("\n Verifique seu Tabuleiro de Tiros"));
+    Serial.println("\n   0 1 2 3 4 5 6 7 8 9");
+    for (int i = 0; i < 10; i++) {
+        Serial.print(i);
+        Serial.print("  ");
+
+        for (int j = 0; j < 10; j++) {
+            if (tabuleiroTiro[i][j] == 0) {
+                Serial.print(F("~ "));   // água
+            } else {
+                Serial.print(tabuleiroTiro[i][j]);
                 Serial.print(F(" "));
             }
         }
@@ -125,7 +147,7 @@ void mostrarTabuleiro() {
 bool todosNaviosAfundados() {
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
-            if(tabuleiro[i][j] == navio) return false; // Se achar qualquer '1', o jogo continua
+            if(tabuleiroBarco[i][j] == navio) return false; // Se achar qualquer '1', o jogo continua
         }
     }
     return true; // Ganhou, parabéns moral
@@ -138,19 +160,21 @@ bool todosNaviosAfundados() {
 int registrarTiro(int x, int y) {
     if(x < 10 && x >= 0 && y < 10 && y >= 0){
         // Se acertou um navio (valores de 1 a 4)
-        if(tabuleiro[x][y] > 0 && tabuleiro[x][y] < 5){
-            tabuleiro[x][y] = 6; // navio atingido
-            Serial.println(F("Fez uma pra Deus ver pelo menos!"));
+        if(tabuleiroBarco[x][y] > 0 && tabuleiroBarco[x][y] < 5){
+            // tabuleiroTiro[x][y] = 6;
+            tabuleiroBarco[x][y] = 6;
+            // navio atingido
+            // Serial.println(F("Fez uma pra Deus ver pelo menos!"));
             return 6;
         }
-        else if (tabuleiro[x][y] == 0) {
-            tabuleiro[x][y] = 5; // tiro na agua
-            Serial.println(F("Rapaz, tu eh ruim viu, errou o tiro"));
+        else if (tabuleiroBarco[x][y] == 0) {
+            // tabuleiroTiro[x][y] = 5; // tiro na agua
+            // Serial.println(F("Rapaz, tu eh ruim viu, errou o tiro"));
             return 5;
         }
     }
     else {
-        Serial.println("Tu eh burro ou o que? Tiro fora do tabuleiro ou colocou numero negativo");
+        // Serial.println("Tu eh burro ou o que? Tiro fora do tabuleiroBarco ou colocou numero negativo");
         return -1;
     }
     return 0; 

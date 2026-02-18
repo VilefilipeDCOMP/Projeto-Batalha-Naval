@@ -89,8 +89,8 @@ class Jogador {
         Jogador(int num);
 };
 
-int lerRecordes();
-int salvarNovaVitoria();
+int lerRecordes(int jogador_id);
+int salvarNovaVitoria(int jogador_id);
 int zerarRecordes();
 
 #endif
@@ -119,7 +119,8 @@ void cenaPontos();
 
 Navios navios[4];
 int tamanhos[4] = {2, 3, 4, 5};
-int8_t tabuleiro[10][10]; 
+int8_t tabuleiroBarco[10][10];
+int8_t tabuleiroTiro[10][10]; 
 
 const int navio = 1;
 const int agua = 0;
@@ -127,7 +128,8 @@ const int agua = 0;
 void iniciarMapaVazio() {
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
-            tabuleiro[i][j] = agua; // Zera tudo (água)
+            tabuleiroBarco[i][j] = agua; // Zera tudo (água)
+            tabuleiroTiro[i][j] = agua;
         }
     }
     // printS("Mapa Pronto!");
@@ -145,12 +147,12 @@ bool podeColocar(int linha, int coluna, char orientacao, int tamanho) {
     if(orientacao == 'H') {
         if(coluna + tamanho > 10) return false;
         for(int i = 0; i < tamanho; i++){
-            if(tabuleiro[linha][coluna+i] != 0) return false;
+            if(tabuleiroBarco[linha][coluna+i] != 0) return false;
         }
     } else {
         if(linha + tamanho > 10) return false;
         for(int i = 0; i < tamanho; i++){
-            if(tabuleiro[linha+i][coluna] != 0) return false;
+            if(tabuleiroBarco[linha+i][coluna] != 0) return false;
         }        
     }
     return true;
@@ -163,9 +165,9 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
 
     for(int i = 0; i < navios[id].tamanho; i++){
         if(orientacao == 'H'){
-            tabuleiro[linha][coluna+i] = id + 1; // Usa id+1 para diferenciar os navios no mapa
+            tabuleiroBarco[linha][coluna+i] = id + 1; // Usa id+1 para diferenciar os navios no mapa
         }else{
-            tabuleiro[linha+i][coluna] = id + 1;
+            tabuleiroBarco[linha+i][coluna] = id + 1;
         }
     }   
 }
@@ -173,8 +175,7 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
 void CadastroCompletao() {
     cadastro();
 
-    // for(int i = 0; i < 4; i++){ // DEBUG: ALTEREI PARA DEBUG
-    for(int i = 0; i < 1; i++){
+    for(int i = 0; i < 4; i++){
         bool posicionado = false;
 
         while(!posicionado) {
@@ -210,16 +211,37 @@ void CadastroCompletao() {
 }
 
 void mostrarTabuleiro() {
+    Serial.println(F("\nTabuleiro de Barco"));
     Serial.println("\n   0 1 2 3 4 5 6 7 8 9");
     for (int i = 0; i < 10; i++) {
         Serial.print(i);
         Serial.print("  ");
 
         for (int j = 0; j < 10; j++) {
-            if (tabuleiro[i][j] == 0) {
+            if (tabuleiroBarco[i][j] == 0) {
                 Serial.print(F("~ "));   // água
             } else {
-                Serial.print(tabuleiro[i][j]);
+                Serial.print(tabuleiroBarco[i][j]);
+                Serial.print(F(" "));
+            }
+        }
+        Serial.println();
+    }
+    Serial.println();
+}
+
+void mostrarTabuleiroTiro() {
+    Serial.println(F("\n Verifique seu Tabuleiro de Tiros"));
+    Serial.println("\n   0 1 2 3 4 5 6 7 8 9");
+    for (int i = 0; i < 10; i++) {
+        Serial.print(i);
+        Serial.print("  ");
+
+        for (int j = 0; j < 10; j++) {
+            if (tabuleiroTiro[i][j] == 0) {
+                Serial.print(F("~ "));   // água
+            } else {
+                Serial.print(tabuleiroTiro[i][j]);
                 Serial.print(F(" "));
             }
         }
@@ -231,7 +253,7 @@ void mostrarTabuleiro() {
 bool todosNaviosAfundados() {
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
-            if(tabuleiro[i][j] == navio) return false; // Se achar qualquer '1', o jogo continua
+            if(tabuleiroBarco[i][j] == navio) return false; // Se achar qualquer '1', o jogo continua
         }
     }
     return true; // Ganhou, parabéns moral
@@ -244,19 +266,21 @@ bool todosNaviosAfundados() {
 int registrarTiro(int x, int y) {
     if(x < 10 && x >= 0 && y < 10 && y >= 0){
         // Se acertou um navio (valores de 1 a 4)
-        if(tabuleiro[x][y] > 0 && tabuleiro[x][y] < 5){
-            tabuleiro[x][y] = 6; // navio atingido
-            Serial.println(F("Fez uma pra Deus ver pelo menos!"));
+        if(tabuleiroBarco[x][y] > 0 && tabuleiroBarco[x][y] < 5){
+            // tabuleiroTiro[x][y] = 6;
+            tabuleiroBarco[x][y] = 6;
+            // navio atingido
+            // Serial.println(F("Fez uma pra Deus ver pelo menos!"));
             return 6;
         }
-        else if (tabuleiro[x][y] == 0) {
-            tabuleiro[x][y] = 5; // tiro na agua
-            Serial.println(F("Rapaz, tu eh ruim viu, errou o tiro"));
+        else if (tabuleiroBarco[x][y] == 0) {
+            // tabuleiroTiro[x][y] = 5; // tiro na agua
+            // Serial.println(F("Rapaz, tu eh ruim viu, errou o tiro"));
             return 5;
         }
     }
     else {
-        Serial.println("Tu eh burro ou o que? Tiro fora do tabuleiro ou colocou numero negativo");
+        // Serial.println("Tu eh burro ou o que? Tiro fora do tabuleiroBarco ou colocou numero negativo");
         return -1;
     }
     return 0; 
@@ -341,7 +365,7 @@ void conectarPlacas() {
     serialPlaca.begin(2400);   // 4800 baud: mais confiável no SoftwareSerial do Tinkercad
     serialPlaca.listen();       // Garante que esta porta SoftwareSerial está ativa
 
-    Serial.println(F("Aguardando conexao com a outra placa..."));
+    // Serial.println(F("Aguardando conexao com a outra placa..."));
 
     bool conectado = false;
     unsigned long ultimoEnvio = 0;
@@ -387,13 +411,13 @@ void conectarPlacas() {
         serialPlaca.read();
     }
 
-    // Prints só DEPOIS de sair do loop
-    if (meuTurno) {
-        Serial.println(F("Conectado! Voce ataca primeiro."));
-    } else {
-        Serial.println(F("Conectado! Adversario ataca primeiro."));
-    }
-    Serial.println(F("=== JOGO INICIADO ==="));
+    // // Prints só DEPOIS de sair do loop
+    // if (meuTurno) {
+    //     Serial.println(F("Conectado! Voce ataca primeiro."));
+    // } else {
+    //     Serial.println(F("Conectado! Adversario ataca primeiro."));
+    // }
+    // Serial.println(F("=== JOGO INICIADO ==="));
 }
 
 
@@ -415,12 +439,12 @@ void enviarTiro(int x, int y) {
 }
 
 int receberStatusDoTiro() {
-    printS("Aguardando resposta do tiro...");
+    //printS("Aguardando resposta do tiro...");
     
     unsigned long inicio = millis();
     while (!serialPlaca.available()) {
         if (millis() - inicio > 30000) {
-            printS("TIMEOUT! Sem resposta da outra placa.");
+            // printS("TIMEOUT! Sem resposta da outra placa.");
             return -1;
         }
     }
@@ -429,15 +453,15 @@ int receberStatusDoTiro() {
     resposta.trim();
     
     if (resposta == "HIT") {
-        printS("Status: ACERTOU!");
+        // printS("Status: ACERTOU!");
         return 6;
     } 
     else if (resposta == "MISS") {
-        printS("Status: ERROU!");
+        // printS("Status: ERROU!");
         return 5;
     } 
     else if (resposta == "WIN") {
-        printS("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
+        // printS("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
         return -1;
     }
     
@@ -447,12 +471,12 @@ int receberStatusDoTiro() {
 }
 
 bool receberTiroAdversario(int &x, int &y) {
-    printS("Aguardando tiro do adversario...");
+    //printS("Aguardando tiro do adversario...");
 
     unsigned long inicio = millis();
     while (!serialPlaca.available()) {
         if (millis() - inicio > 60000) {
-            printS("TIMEOUT! Adversario demorou demais.");
+            // printS("TIMEOUT! Adversario demorou demais.");
             return false;
         }
     }
@@ -468,17 +492,17 @@ bool receberTiroAdversario(int &x, int &y) {
             x = coords.substring(0, virgula).toInt();
             y = coords.substring(virgula + 1).toInt();
             
-            Serial.print("Tiro recebido -> (");
-            Serial.print(x);
-            Serial.print(",");
-            Serial.print(y);
-            printS(")");
+            // printS("Tiro recebido -> (");
+            // Serial.print(x);
+            // printS(",");
+            // Serial.print(y);
+            // printS(")");
             
             return true;
         }
     }
     
-    Serial.print("Mensagem invalida recebida: ");
+    printS("Mensagem invalida recebida: ");
     Serial.print(msg);
     return false;
 }
@@ -487,19 +511,19 @@ void enviarStatusDoTiro(int resultado) {
     if (resultado == 6) {
         if (todosNaviosAfundados()) {
             serialPlaca.println("WIN");
-            printS("Enviado: WIN - Todos os seus navios foram afundados!");
+            // printS("Enviado: WIN - Todos os seus navios foram afundados!");
         } else {
             serialPlaca.println("HIT");
-            printS("Enviado: HIT");
+            // printS("Enviado: HIT");
         }
     } 
     else if (resultado == 5) {
         serialPlaca.println("MISS");
-        printS("Enviado: MISS");
+        // printS("Enviado: MISS");
     }
     else {
         serialPlaca.println("MISS");
-        printS("Enviado: MISS (tiro invalido/repetido)");
+        // printS("Enviado: MISS (tiro invalido/repetido)");
     }
 }
 
@@ -509,16 +533,12 @@ void enviarStatusDoTiro(int resultado) {
 
 Jogador::Jogador(int num) {
     id = num;
-    vitorias = lerRecordes();
+    vitorias = lerRecordes(num);
 }
 
-// Id player, Vitoria
-
-int lerRecordes() {
+int lerRecordes(int jogador_id) {
     int valor_lido{0};
-    int enderenco_inicial{0};
-    
-    Serial.print("Read int from EEPROM: ");
+    int enderenco_inicial{sizeof(int) * jogador_id};
     
     EEPROM.get(enderenco_inicial, valor_lido);
     
@@ -527,12 +547,20 @@ int lerRecordes() {
     return valor_lido;
 }
 
-int salvarNovaVitoria() {
-    EEPROM[0] += 1;
+int salvarNovaVitoria(int jogador_id) {
+    // vitorias_jogador = lerRecordes(jogador); 
+    // EEPROM[jogador_id] += 1;
+
+    int valor_atual{lerRecordes(jogador_id)};
+    int enderenco_inicial{sizeof(int) * jogador_id};
+
+    EEPROM.put(enderenco_inicial, valor_atual + 1);
 }
 
 int zerarRecordes() {
-    EEPROM.write(0, 0);
+    for (int i = 0 ; i < EEPROM.length() ; i++) {
+        EEPROM.write(i, 0);
+    }
 }
 // ========================================
 // ARQUIVO: Tela.cpp
@@ -632,8 +660,8 @@ void cenaPontos() {
   
   lcd.setCursor(1, 0);
   lcd.print("Frota  Aliada");
-  lcd.setCursor(6, 1);
-  lcd.print("555");
+  lcd.setCursor(7, 1);
+  lcd.print(lerRecordes(0));
   
   delay(3500);
     
@@ -641,8 +669,8 @@ void cenaPontos() {
   
   lcd.setCursor(1, 0);
   lcd.print("Frota  Inimiga");
-  lcd.setCursor(6, 1);
-  lcd.print("111");
+  lcd.setCursor(7, 1);
+  lcd.print(lerRecordes(1));
 
   delay(3500);
 
@@ -757,6 +785,7 @@ void cenaErrou() {
 
 int hitou;
 bool fim = false;
+bool telaDesenhada = false;
 
 void setup()
 {
@@ -775,98 +804,110 @@ void setup()
 
 void loop(){
     if (fim) {
-        cenaPontos();
+        if (!telaDesenhada) {
+            lcd.clear();
+            lcd.setCursor(0,0);
+            lcd.print("Clique CRIVAR p/");
+            lcd.setCursor(0,1);
+            lcd.print("reiniciar jogo");
+            telaDesenhada = true;
+        }
 
         btn = move();
-
-        if (btn == CRAVAR) {
+        if (btn == CRIVAR) {
             iniciarJogo();
         }
-        
-        // return;
+
     }
 
-    if (meuTurno) {
-        Serial.println("--- Seu turno! Escolha as coordenadas ---");
-        lcd.clear();
-
-        receberCoord();
-
-        enviarTiro(plx, ply);
-
-        hitou = receberStatusDoTiro();
-
-        if (hitou == 6) {
-            cenaAcertou();
-        } else if (hitou == 5) {
-            cenaErrou();
-        } else if (hitou == -1) {
-            cenaAcertou();
+    if (!fim) {
+        if (meuTurno) {
+            Serial.println("--- Seu turno ---");
             lcd.clear();
-            lcd.setCursor(2, 0);
-            lcd.print("VOCE  VENCEU!");
-            lcd.setCursor(1, 1);
-            lcd.print("PARABENS MORAL");
-            Serial.println("=== VOCE VENCEU! ===");
-            salvarNovaVitoria();
-            fim = true;
-            return;
-        }
 
-        meuTurno = false;
-
-    } else {
-        Serial.println("--- Turno do adversario. Aguardando tiro... ---");
-        lcd.clear();
-        lcd.setCursor(0, 0);
-        lcd.print("Turno  Inimigo");
-        lcd.setCursor(0, 1);
-        lcd.print("Aguardando...");
-
-        int tiroX, tiroY;
-        if (receberTiroAdversario(tiroX, tiroY)) {
-            int resultado = registrarTiro(tiroX, tiroY);
-
-            lcd.clear();
-            cenaXY(tiroX, tiroY);
-            delay(500);
-
-            enviarStatusDoTiro(resultado);
-
-            if (resultado == 6) {
-                cenaAcertou();
-
-                if (todosNaviosAfundados()) {
-                    lcd.clear();
-                    lcd.setCursor(1, 0);
-                    lcd.print("VOCE  PERDEU!");
-                    lcd.setCursor(2, 1);
-                    lcd.print("FIM DE JOGO");
-                    Serial.println("=== VOCE PERDEU! ===");
-                    fim = true;
-                    return;
-                }
-            } else if (resultado == 5) {
-                cenaErrou();
-            }
-
+            mostrarTabuleiroTiro();
             mostrarTabuleiro();
+
+            receberCoord();
+    
+            enviarTiro(plx, ply);
+    
+            hitou = receberStatusDoTiro();
+    
+            if (hitou == 6) {
+                tabuleiroTiro[plx][ply] = 6;
+                cenaAcertou();
+            } else if (hitou == 5) {
+                tabuleiroTiro[plx][ply] = 5;
+                cenaErrou();
+            } else if (hitou == -1) {
+                cenaAcertou();
+                lcd.clear();
+                lcd.setCursor(2, 0);
+                lcd.print("VOCE  VENCEU!");
+                lcd.setCursor(1, 1);
+                lcd.print("PARABENS MORAL");
+                Serial.println("=== VOCE VENCEU! ===");
+                salvarNovaVitoria(0);
+                fim = true;
+                return;
+            }
+    
+            meuTurno = false;
+    
+        } else {
+            Serial.println("--- Turno do adversario. ---");
+            lcd.clear();
+            lcd.setCursor(0, 0);
+            lcd.print("Turno  Inimigo");
+            lcd.setCursor(0, 1);
+            lcd.print("Aguardando...");
+    
+            int tiroX, tiroY;
+            if (receberTiroAdversario(tiroX, tiroY)) {
+                int resultado = registrarTiro(tiroX, tiroY);
+    
+                lcd.clear();
+                cenaXY(tiroX, tiroY);
+                delay(500);
+    
+                enviarStatusDoTiro(resultado);
+    
+                if (resultado == 6) {
+                    cenaAcertou();
+    
+                    if (todosNaviosAfundados()) {
+                        lcd.clear();
+                        lcd.setCursor(1, 0);
+                        lcd.print("VOCE  PERDEU!");
+                        lcd.setCursor(2, 1);
+                        lcd.print("FIM DE JOGO");
+                        Serial.println("=== VOCE PERDEU! ===");
+                        salvarNovaVitoria(1);
+                        fim = true;
+                        return;
+                    }
+                } else if (resultado == 5) {
+                    cenaErrou();
+                }
+            }
+    
+            meuTurno = true;
+    
+        //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
+        //Estado atual vira espectador
         }
-
-        meuTurno = true;
-
-    //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
-    //Estado atual vira espectador
     }
 }
 
 void iniciarJogo(){
     hitou = 0;
     fim = false;
+    telaDesenhada = false;
 
     // cenaTitulo();
-
-    Jogador jogador = Jogador(0);
+    menuStartGame();
+    // cenaPontos();
 
     // 1: Posicionar navios
     iniciarMapaVazio();
@@ -886,6 +927,67 @@ void iniciarJogo(){
     lcd.print(" JOGO  INICIADO ");
 
     delay(500);
+}
+
+// bool cenaPontosTick() {
+//   // retorna true enquanto a cena está rodando, false quando terminou
+//   if (cpEstado == CP_INATIVA) return false;
+
+//   if (cpEstado == CP_ALIADA) {
+//     if (millis() - cpT0 >= 3500UL) {
+//       cpEstado = CP_INIMIGA;
+//       cpT0 = millis();
+
+//       lcd.clear();
+//       lcd.setCursor(1, 0);
+//       lcd.print("Frota  Inimiga");
+//       lcd.setCursor(6, 1);
+//       lcd.print(lerRecordes(1));
+//     }
+//     return true;
+//   }
+
+//   if (cpEstado == CP_INIMIGA) {
+//     if (millis() - cpT0 >= 3500UL) {
+//       cpEstado = CP_FIM;
+//       lcd.clear();
+//     }
+//     return true;
+//   }
+
+//   // CP_FIM
+//   cpEstado = CP_INATIVA;
+//   return false;
+// }
+
+void menuStartGame() {
+    bool start_estado = true;
+
+    while (start_estado) {
+        cenaTitulo();
+        cenaPontos();
+
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Zerar Record: <-");
+        lcd.setCursor(0,1);
+        lcd.print("Start:    CRIVAR");
+
+        for (int i = 0; i < 10000; i++) {
+            btn = move();
+            if (btn == CRIVAR) {
+                start_estado = false;
+            } else if (btn == LEFT) {
+                lcd.clear();
+                lcd.setCursor(0,0);
+                lcd.print("Seu recorde foi");
+                lcd.setCursor(0,1);
+                lcd.print("zerado!");
+                zerarRecordes();
+                delay(500);
+            }
+        }
+    }
 }
 
 void receberCoord() {
