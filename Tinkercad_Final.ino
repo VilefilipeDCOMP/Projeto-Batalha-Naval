@@ -241,27 +241,41 @@ bool todosNaviosAfundados() {
 // 1 a 4 -> navios
 // 5 -> tiro na agua (mudei para 20 para não confundir com o ID do navio 2)
 // 6 -> navio atingido (mudei para 30 para não confundir com o ID do navio 3)
-
 int registrarTiro(int x, int y) {
     if(x < 10 && x >= 0 && y < 10 && y >= 0){
         // Se acertou um navio (valores de 1 a 4)
         if(tabuleiro[x][y] > 0 && tabuleiro[x][y] < 5){
             tabuleiro[x][y] = 6; // navio atingido
-            //Serial.println(F("Fez uma pra Deus ver pelo menos!"));
+            Serial.println(F("Fez uma pra Deus ver pelo menos!"));
             return 6;
         }
         else if (tabuleiro[x][y] == 0) {
             tabuleiro[x][y] = 5; // tiro na agua
-            //Serial.println(F("Rapaz, tu eh ruim viu, errou o tiro"));
+            Serial.println(F("Rapaz, tu eh ruim viu, errou o tiro"));
             return 5;
         }
     }
     else {
-        //Serial.println("Tu eh burro ou o que? Tiro fora do tabuleiro ou colocou numero negativo");
+        Serial.println("Tu eh burro ou o que? Tiro fora do tabuleiro ou colocou numero negativo");
         return -1;
     }
     return 0; 
 }
+
+
+// void setup() {
+//     Serial.begin(9600);
+//     iniciarMapaVazio();
+//     CadastroCompletao();
+//     // funcao de sidnei
+//     registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
+    
+//     //mostrarTabuleiro(); 
+// }
+
+// void loop() {
+//     // A lógica de turnos virá aqui depois
+// }
 
 int escolherPosicao() {
     plx = 0;
@@ -327,7 +341,7 @@ void conectarPlacas() {
     serialPlaca.begin(2400);   // 4800 baud: mais confiável no SoftwareSerial do Tinkercad
     serialPlaca.listen();       // Garante que esta porta SoftwareSerial está ativa
 
-    //Serial.println(F("Aguardando conexao com a outra placa..."));
+    Serial.println(F("Aguardando conexao com a outra placa..."));
 
     bool conectado = false;
     unsigned long ultimoEnvio = 0;
@@ -374,12 +388,12 @@ void conectarPlacas() {
     }
 
     // Prints só DEPOIS de sair do loop
-    //if (meuTurno) {
-        //Serial.println(F("Conectado! Voce ataca primeiro."));
-    //} else {
-        //Serial.println(F("Conectado! Adversario ataca primeiro."));
-    //}
-    //Serial.println(F("=== JOGO INICIADO ==="));
+    if (meuTurno) {
+        Serial.println(F("Conectado! Voce ataca primeiro."));
+    } else {
+        Serial.println(F("Conectado! Adversario ataca primeiro."));
+    }
+    Serial.println(F("=== JOGO INICIADO ==="));
 }
 
 
@@ -401,31 +415,31 @@ void enviarTiro(int x, int y) {
 }
 
 int receberStatusDoTiro() {
-    //printS("Aguardando resposta do tiro...");
+    printS("Aguardando resposta do tiro...");
     
     unsigned long inicio = millis();
-    //while (!serialPlaca.available()) {
-        //if (millis() - inicio > 30000) {
-            //printS("TIMEOUT! Sem resposta da outra placa.");
-            //return -1;
-        //}
-    //}
+    while (!serialPlaca.available()) {
+        if (millis() - inicio > 30000) {
+            printS("TIMEOUT! Sem resposta da outra placa.");
+            return -1;
+        }
+    }
     
     String resposta = serialPlaca.readStringUntil('\n');
     resposta.trim();
     
-    //if (resposta == "HIT") {
-        //printS("Status: ACERTOU!");
-        //return 6;
-    //} 
-    //else if (resposta == "MISS") {
-        //printS("Status: ERROU!");
-        //return 5;
-    //} 
-    //else if (resposta == "WIN") {
-        //printS("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
-        //return -1;
-    //}
+    if (resposta == "HIT") {
+        printS("Status: ACERTOU!");
+        return 6;
+    } 
+    else if (resposta == "MISS") {
+        printS("Status: ERROU!");
+        return 5;
+    } 
+    else if (resposta == "WIN") {
+        printS("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
+        return -1;
+    }
     
     Serial.println("Resposta desconhecida: ");
     Serial.println(resposta);
@@ -433,12 +447,12 @@ int receberStatusDoTiro() {
 }
 
 bool receberTiroAdversario(int &x, int &y) {
-    //printS("Aguardando tiro do adversario...");
+    printS("Aguardando tiro do adversario...");
 
     unsigned long inicio = millis();
     while (!serialPlaca.available()) {
         if (millis() - inicio > 60000) {
-            //printS("TIMEOUT! Adversario demorou demais.");
+            printS("TIMEOUT! Adversario demorou demais.");
             return false;
         }
     }
@@ -454,11 +468,11 @@ bool receberTiroAdversario(int &x, int &y) {
             x = coords.substring(0, virgula).toInt();
             y = coords.substring(virgula + 1).toInt();
             
-            //Serial.print("Tiro recebido -> (");
-            //Serial.print(x);
-            //Serial.print(",");
-            //Serial.print(y);
-            //printS(")");
+            Serial.print("Tiro recebido -> (");
+            Serial.print(x);
+            Serial.print(",");
+            Serial.print(y);
+            printS(")");
             
             return true;
         }
@@ -504,11 +518,11 @@ int lerRecordes() {
     int valor_lido{0};
     int enderenco_inicial{0};
     
-    //Serial.print("Read int from EEPROM: ");
+    Serial.print("Read int from EEPROM: ");
     
     EEPROM.get(enderenco_inicial, valor_lido);
     
-    //Serial.println(valor_lido);
+    Serial.println(valor_lido);
 
     return valor_lido;
 }
@@ -773,7 +787,7 @@ void loop(){
     }
 
     if (meuTurno) {
-        //Serial.println("--- Seu turno! Escolha as coordenadas ---");
+        Serial.println("--- Seu turno! Escolha as coordenadas ---");
         lcd.clear();
 
         receberCoord();
@@ -793,7 +807,7 @@ void loop(){
             lcd.print("VOCE  VENCEU!");
             lcd.setCursor(1, 1);
             lcd.print("PARABENS MORAL");
-            //Serial.println("=== VOCE VENCEU! ===");
+            Serial.println("=== VOCE VENCEU! ===");
             salvarNovaVitoria();
             fim = true;
             return;
@@ -802,7 +816,7 @@ void loop(){
         meuTurno = false;
 
     } else {
-        //Serial.println("--- Turno do adversario. Aguardando tiro... ---");
+        Serial.println("--- Turno do adversario. Aguardando tiro... ---");
         lcd.clear();
         lcd.setCursor(0, 0);
         lcd.print("Turno  Inimigo");
@@ -828,7 +842,7 @@ void loop(){
                     lcd.print("VOCE  PERDEU!");
                     lcd.setCursor(2, 1);
                     lcd.print("FIM DE JOGO");
-                    //Serial.println("=== VOCE PERDEU! ===");
+                    Serial.println("=== VOCE PERDEU! ===");
                     fim = true;
                     return;
                 }
