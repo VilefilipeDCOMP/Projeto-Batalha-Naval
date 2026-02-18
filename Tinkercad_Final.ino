@@ -1,6 +1,8 @@
 // === BIBLIOTECAS NATIVAS ===
+#include <Arduino.h>
 #include <EEPROM.h>
 #include <LiquidCrystal_I2C.h>
+#include <SoftwareSerial.h>
 #include <Wire.h>
 
 
@@ -20,6 +22,10 @@ struct Navios {
     char orientacao;
 };
 
+extern int plx;
+extern int ply;
+int move();
+
 void iniciarMapaVazio();
 void cadastro();
 bool podeColocar(int linha, int coluna, char orientacao, int tamanho);
@@ -29,6 +35,33 @@ void CadastroCompletao();
 void mostrarTabuleiro();
 bool todosNaviosAfundados();
 int registrarTiro(int x, int y);
+
+void receberCoord();
+char escolherOrientacao();
+// ========================================
+// ARQUIVO: Comunicacao.h
+// ========================================
+#ifndef COMUNICACAO_H
+#define COMUNICACAO_H
+
+
+// TX da placa conecta no RX da outra
+#define PIN_RX 7
+#define PIN_TX 8
+
+// principais
+void conectarPlacas();
+void enviarTiro(int x, int y);
+int  receberStatusDoTiro();
+
+// adversário
+bool receberTiroAdversario(int &x, int &y);
+void enviarStatusDoTiro(int resultado);
+
+extern bool meuTurno;
+extern SoftwareSerial serialPlaca;
+
+#endif
 // ========================================
 // ARQUIVO: Recordes.h
 // ========================================
@@ -131,39 +164,27 @@ void CadastroCompletao() {
         bool posicionado = false;
 
         while(!posicionado) {
-            Serial.println(" --- Cadastro ---");
-            Serial.print("Navio ");
-            Serial.print(i + 1);
-            Serial.print(" -> Tamanho = ");
-            Serial.print(navios[i].tamanho);
+            receberCoord(); // Vai retornar plx e ply global 
+            // WARNING: Talvez bem talves nao altere as glovais, acho que altera
 
-            Serial.println("\n Digite a linha (0 a 9):");
-            while(!Serial.available());
-            int linha = Serial.parseInt();
-            Serial.read(); // Limpa o buffer
-
-            Serial.println("Digite a coluna (0 a 9):");
-            while(!Serial.available());
-            int coluna = Serial.parseInt();
-            Serial.read();
-
-            Serial.println("Digite a orientacao (H/V):");
-            while(!Serial.available());
-            char orientacao = Serial.read();
-            Serial.read();
+            int linha = plx;
+            int coluna = ply;
+            char orientacao = escolherOrientacao();
 
             if(podeColocar(linha, coluna, orientacao, navios[i].tamanho)){
                 colocarNavioDeLadinho(i, linha, coluna, orientacao);
-                Serial.println("Navio Posicionado"); // BOTAR NO LCD
+                lcd.print("Navio Posicionado"); // BOTAR NO LCD
                 posicionado = true;
                 if(navios[i].tamanho != 5)
                     mostrarTabuleiro();
             } else {
-                Serial.println("Posicao Invalida ladrao"); // BOTAR NO LCD
+                lcd.clear();
+                lcd.print("Posicao Invalida"); // BOTAR NO LCD
             }
         }
     }
-    Serial.println("Todos os navios posicionados"); // BOTAR NO LCD
+    lcd.clear();
+    lcd.print("Navios Alinhados"); // BOTAR NO LCD
 }
 
 void mostrarTabuleiro() {
@@ -233,6 +254,210 @@ int registrarTiro(int x, int y) {
 // void loop() {
 //     // A lógica de turnos virá aqui depois
 // }
+
+int escolherPosicao() {
+    plx = 0;
+    ply = 0;
+
+    bool escolhendo = true;
+
+        receberCoord();
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Linha: ");
+        lcd.print(plx);
+
+        lcd.setCursor(0,1);
+        lcd.print("Coluna: ");
+        lcd.print(ply);
+
+        delay(150);
+    
+}
+
+char escolherOrientacao() {
+
+    char o = 'H';
+    bool escolhendo = true;
+
+    while (escolhendo) {
+
+        btn = move();
+
+        if (btn == UP || btn == DOWN) {
+            o = (o == 'H') ? 'V' : 'H'; // ternario sagaz LIMONATIONS -> muda a orientação cada vez q vc aperta
+        }
+
+        if (btn == CRIVAR) {
+            escolhendo = false;
+        }
+
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Orientacao:");
+        lcd.setCursor(0,1);
+        lcd.print(o);
+
+        delay(150);
+    }
+
+    return o;
+}
+
+
+// ========================================
+// ARQUIVO: Comunicacao.cpp
+// ========================================
+
+SoftwareSerial serialPlaca(PIN_RX, PIN_TX); // RX=7, TX=8
+
+bool meuTurno = false;
+
+void conectarPlacas() {
+    serialPlaca.begin(9600);
+    
+    Serial.println("Aguardando conexao com a outra placa...");
+    
+    bool conectado = false;
+    bool jaEnvieiReady = false;
+    unsigned long ultimoEnvio = 0;
+    
+    while (!conectado) {
+        unsigned long agora = millis();
+        if (agora - ultimoEnvio >= 500) {
+            serialPlaca.println("READY");
+            ultimoEnvio = agora;
+            if (!jaEnvieiReady) {
+                jaEnvieiReady = true;
+            }
+        }
+        if (serialPlaca.available()) {
+            String msg = serialPlaca.readStringUntil('\n');
+            msg.trim();
+            
+            if (msg == "READY") {
+                conectado = true;
+                if (jaEnvieiReady) {
+                    meuTurno = true;
+                    Serial.println("Conectado! Voce ataca primeiro.");
+                } else {
+                    meuTurno = false;
+                    Serial.println("Conectado! Adversario ataca primeiro.");
+                }
+                serialPlaca.println("READY");
+            }
+        }
+    }
+    
+    delay(200);
+    
+    while (serialPlaca.available()) {
+        serialPlaca.read();
+    }
+    
+    Serial.println("=== JOGO INICIADO ===");
+}
+
+void enviarTiro(int x, int y) {
+    String mensagem = "TIRO:" + String(x) + "," + String(y);
+    serialPlaca.println(mensagem);
+    
+    Serial.print("Tiro enviado -> (");
+    Serial.print(x);
+    Serial.print(",");
+    Serial.print(y);
+    Serial.println(")");
+}
+
+int receberStatusDoTiro() {
+    Serial.println("Aguardando resposta do tiro...");
+    
+    unsigned long inicio = millis();
+    while (!serialPlaca.available()) {
+        if (millis() - inicio > 30000) {
+            Serial.println("TIMEOUT! Sem resposta da outra placa.");
+            return -1;
+        }
+    }
+    
+    String resposta = serialPlaca.readStringUntil('\n');
+    resposta.trim();
+    
+    if (resposta == "HIT") {
+        Serial.println("Status: ACERTOU!");
+        return 6;
+    } 
+    else if (resposta == "MISS") {
+        Serial.println("Status: ERROU!");
+        return 5;
+    } 
+    else if (resposta == "WIN") {
+        Serial.println("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
+        return -1;
+    }
+    
+    Serial.print("Resposta desconhecida: ");
+    Serial.println(resposta);
+    return 0;
+}
+
+bool receberTiroAdversario(int &x, int &y) {
+    Serial.println("Aguardando tiro do adversario...");
+
+    unsigned long inicio = millis();
+    while (!serialPlaca.available()) {
+        if (millis() - inicio > 60000) {
+            Serial.println("TIMEOUT! Adversario demorou demais.");
+            return false;
+        }
+    }
+    
+    String msg = serialPlaca.readStringUntil('\n');
+    msg.trim();
+    
+    if (msg.startsWith("TIRO:")) {
+        String coords = msg.substring(5);
+        
+        int virgula = coords.indexOf(',');
+        if (virgula > 0) {
+            x = coords.substring(0, virgula).toInt();
+            y = coords.substring(virgula + 1).toInt();
+            
+            Serial.print("Tiro recebido -> (");
+            Serial.print(x);
+            Serial.print(",");
+            Serial.print(y);
+            Serial.println(")");
+            
+            return true;
+        }
+    }
+    
+    Serial.print("Mensagem invalida recebida: ");
+    Serial.println(msg);
+    return false;
+}
+
+void enviarStatusDoTiro(int resultado) {
+    if (resultado == 6) {
+        if (todosNaviosAfundados()) {
+            serialPlaca.println("WIN");
+            Serial.println("Enviado: WIN - Todos os seus navios foram afundados!");
+        } else {
+            serialPlaca.println("HIT");
+            Serial.println("Enviado: HIT");
+        }
+    } 
+    else if (resultado == 5) {
+        serialPlaca.println("MISS");
+        Serial.println("Enviado: MISS");
+    }
+    else {
+        serialPlaca.println("MISS");
+        Serial.println("Enviado: MISS (tiro invalido/repetido)");
+    }
+}
+
 // ========================================
 // ARQUIVO: Recordes.cpp
 // ========================================
@@ -489,99 +714,131 @@ void cenaErrou() {
 int plx = 0, ply = 0;
 int btn = 0;
 int hitou;
-bool fim;
+bool fim = false;
 
 void setup()
 {
     Serial.begin(9600);
 
     pinMode(UP, INPUT_PULLUP);
-  	pinMode(RIGHT, INPUT_PULLUP);
-  	pinMode(DOWN, INPUT_PULLUP);
-  	pinMode(LEFT, INPUT_PULLUP);
-  	pinMode(CRIVAR, INPUT_PULLUP);
+    pinMode(RIGHT, INPUT_PULLUP);
+    pinMode(DOWN, INPUT_PULLUP);
+    pinMode(LEFT, INPUT_PULLUP);
+    pinMode(CRIVAR, INPUT_PULLUP);
 
+    inicializarTela();
+    cenaTitulo();
 
     Jogador jogador = Jogador(0);
 
+    // 1: Posicionar navios
     iniciarMapaVazio();
     CadastroCompletao();
-    // funcao de sidnei
-    registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
-    //mostrarTabuleiro(); 
+    mostrarTabuleiro();
 
-    // Como é feita a comunicação direta entre as placas, não existe esse objeto.
-    // Jogador jogador2 = Jogador(1);
-
+    // 2: Conectar com a outra placa (handshake)
+    conectarPlacas();
 }
 
 
 void loop()
 {
-    //PLAYER JOGA
-    //hitou = registrarTiro(/*infoX,*/ /*infoY*/); //SE TOMOU RETORNA 6, SE ERROU RETORNA 5
-    //As variaveis infox e infoy são recebidas pela placa através do serial(ou algo do tipo)
-    //SIDNEI RESOLVE ISSO e PRECISA decidir como dizer quem começa atirando, para não começar registrando um tiro que não foi dado como acontece duas linhas acima
-    //SIDNEI usa essa merda desse hitou pra informar a outra placa que o tiro dela pegou em mim
-    //cena de acerto ou cena de erro
+    if (fim) {
+        return;
+    }
 
-    //Verifica se alguem ganhou
-    // if(registrarTiro(infoX, infoY) == 6){
-    //     fim = todosNaviosAfundados();
-    // };
-
-    // if(fim){
-    //     //cena de vitoria 
-    //     while(1);
-    // }
-    
-    {
-        btn = move();
-        switch (btn){
-        case UP:
-            if(plx > 0) plx--;
-            break;
+    if (meuTurno) {
+        // === MEU TURNO: ATACAR ===
         
-        case RIGHT:
-            if(ply < 9) ply++;
-            break;
+        Serial.println("--- Seu turno! Escolha as coordenadas ---");
+        lcd.clear();
+        cenaXY(plx, ply); // mostra inicial
 
-        case DOWN:
-            if(plx < 9) plx++;
-            break;
+        // Usa a função de input unificada (vinda do merge, agora no cpp)
+        receberCoord(); 
 
-        case LEFT:
-            if(ply > 0) ply--;
-            break;
+        // Envia o tiro para a outra placa
+        enviarTiro(plx, ply);
 
-        case CRIVAR:
-            btn = 0;
-            break;
-            
-        default:
-            break;
+        // Aguarda a resposta (HIT, MISS ou WIN)
+        hitou = receberStatusDoTiro();
+
+        if (hitou == 6) {
+            cenaAcertou();
+        } else if (hitou == 5) {
+            cenaErrou();
+        } else if (hitou == -1) {
+            lcd.clear();
+            lcd.setCursor(2, 0);
+            lcd.print("VOCE  VENCEU!");
+            lcd.setCursor(1, 1);
+            lcd.print("PARABENS MORAL");
+            Serial.println("=== VOCE VENCEU! ===");
+            salvarNovaVitoria();
+            fim = true;
+            return;
         }
-        cenaXY(plx, ply);
-    } while (btn);
-    //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
-    //Estado atual vira espectador
+
+        // Passa o turno para o adversário
+        meuTurno = false;
+
+    } else {
+        // === TURNO DO ADVERSÁRIO: DEFENDER ===
+        Serial.println("--- Turno do adversario. Aguardando tiro... ---");
+        lcd.clear();
+        lcd.setCursor(0, 0);
+        lcd.print("Turno  Inimigo");
+        lcd.setCursor(0, 1);
+        lcd.print("Aguardando...");
+
+        int tiroX, tiroY;
+        if (receberTiroAdversario(tiroX, tiroY)) {
+            // Registra o tiro no meu tabuleiro
+            int resultado = registrarTiro(tiroX, tiroY);
+
+            // Mostra no LCD onde o adversário atirou
+            lcd.clear();
+            cenaXY(tiroX, tiroY);
+            delay(500);
+
+            // Envia o resultado para o adversário (HIT/MISS/WIN)
+            enviarStatusDoTiro(resultado);
+
+            if (resultado == 6) {
+                cenaAcertou();
+
+                if (todosNaviosAfundados()) {
+                    lcd.clear();
+                    lcd.setCursor(1, 0);
+                    lcd.print("VOCE  PERDEU!");
+                    lcd.setCursor(2, 1);
+                    lcd.print("FIM DE JOGO");
+                    Serial.println("=== VOCE PERDEU! ===");
+                    fim = true;
+                    return;
+                }
+            } else if (resultado == 5) {
+                cenaErrou();
+            }
+
+            mostrarTabuleiro();
+        }
+
+        meuTurno = true;
+    }
 }
 
-int move(){
-    if(digitalRead(UP) == LOW){
+int move() {
+    if (digitalRead(UP) == LOW) {
         return UP;
-        
-    } else if(digitalRead(RIGHT) == LOW){
+    } else if (digitalRead(RIGHT) == LOW) {
         return RIGHT;
-
-    } else if(digitalRead(DOWN) == LOW){
+    } else if (digitalRead(DOWN) == LOW) {
         return DOWN;
-
-    } else if(digitalRead(LEFT) == LOW){
+    } else if (digitalRead(LEFT) == LOW) {
         return LEFT;
-
-    } else if(digitalRead(CRIVAR) == LOW){
+    } else if (digitalRead(CRIVAR) == LOW) {
         return CRIVAR;
-
     }
+    return 0;
 }
