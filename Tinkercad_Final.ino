@@ -16,6 +16,8 @@
 #define LEFT 5
 #define CRIVAR 6
 
+#define PLAYER_ID 1   // na outra placa: 2
+
 // ##define F(x) F(x)
 #define printS(x) Serial.print(F(x))
 
@@ -338,116 +340,65 @@ SoftwareSerial serialPlaca(PIN_RX, PIN_TX); // RX=7, TX=8
 
 bool meuTurno = false;
 
-// void conectarPlacas() {
-//     serialPlaca.begin(9600);
-//     serialPlaca.setTimeout(50);
-    
-//     printS("Aguardando conexao com a outra placa...");
-
-//     String msg;
-//     msg.reserve(64);
-    
-//     bool conectado = false;
-//     bool jaEnvieiReady = false;
-//     unsigned long ultimoEnvio = 0;
-    
-//     while (!conectado) {
-//         // printS("Aguardando conexão...\n");
-//         unsigned long agora = millis();
-
-//         // O que envia
-//         if (agora - ultimoEnvio >= 500) {
-//             printS("[DEBUG] LOOP de ENVIO\n");
-//             serialPlaca.println("READY");
-//             ultimoEnvio = agora;
-//             if (!jaEnvieiReady) {
-//                 jaEnvieiReady = true;
-//             }
-//         }
-
-//         // O que recebe
-//         if (serialPlaca.available()) {
-//             printS("[DEBUG] Loop de RECEBENDO\n");
-
-//             msg = serialPlaca.readStringUntil('\n');
-//             msg.trim();
-
-//             Serial.println(msg);
-            
-//             if (msg == "READY") {
-//                 printS("[DEBUG] READY");
-//                 conectado = true;
-//                 if (jaEnvieiReady) {
-//                     meuTurno = true;
-//                     printS("Conectado! Voce ataca primeiro.");
-//                 } else {
-//                     meuTurno = false;
-//                     printS("Conectado! Adversario ataca primeiro.");
-//                 }
-//                 serialPlaca.println("READY");
-//             }
-//         }
-//     }
-    
-//     delay(200);
-    
-//     while (serialPlaca.available()) {
-//         serialPlaca.read();
-//     }
-    
-//     printS("=== JOGO INICIADO ===");
-// }
-
 void conectarPlacas() {
-    serialPlaca.begin(9600);
-    
-    printS("Aguardando conexao com a outra placa...");
-    
+    serialPlaca.begin(4800);   // 4800 baud: mais confiável no SoftwareSerial do Tinkercad
+    serialPlaca.listen();       // Garante que esta porta SoftwareSerial está ativa
+
+    Serial.println(F("Aguardando conexao com a outra placa..."));
+
     bool conectado = false;
     unsigned long ultimoEnvio = 0;
-    
+    unsigned int semente = analogRead(A5);  // pino flutuante para aleatoriedade
+
+    const bool isMaster = (PLAYER_ID == 1);
+
+    // PROTOCOLO SIMPLIFICADO:
+    //   'R' = READY    'A' = ACK
+    // Apenas 1 byte cada, lido byte a byte — sem readStringUntil.
+
     while (!conectado) {
-        // Primeiro: SEMPRE tenta ler o que chegou (prioridade para receber)
-        printS("[DEBUG] RECEBENDO");
+        // --- RECEPÇÃO (byte a byte, sem bloqueio, sem prints) ---
         if (serialPlaca.available()) {
-            String msg = serialPlaca.readStringUntil('\n');
-            msg.trim();
-            
-            if (msg == "READY") {
-                // Recebi READY do outro — respondo com ACK e conecto
-                delay(50); // Pequeno delay para o outro parar de transmitir
-                serialPlaca.println("ACK");
+            char c = serialPlaca.read();
+
+            if (c == 'R') {
+                delay(100);
+                serialPlaca.write('A');
+                delay(50);
                 conectado = true;
-                meuTurno = false; // Quem recebe READY primeiro joga segundo
-                printS("Conectado! Adversario ataca primeiro.");
-            } 
-            else if (msg == "ACK") {
-                // Recebi ACK — o outro confirmou, estamos conectados
-                conectado = true;
-                meuTurno = true; // Quem enviou READY primeiro joga primeiro
-                printS("Conectado! Voce ataca primeiro.");
+                meuTurno = false;
             }
+            else if (c == 'A') {
+                conectado = true;
+                meuTurno = true;
+            }
+            // qualquer outro byte é ignorado silenciosamente
         }
-        
-        // Segundo: Envia READY periodicamente, mas com intervalo ALEATÓRIO
-        // para evitar colisão constante
-        printS("[DEBUG] ENVIANDO");
+
+        // --- ENVIO periódico com intervalo aleatório ---
         unsigned long agora = millis();
-        unsigned long intervalo = 800 + (millis() % 400); // 800-1200ms aleatório
+        unsigned long intervalo = 1000 + (semente % 500);
         if (!conectado && (agora - ultimoEnvio >= intervalo)) {
-            serialPlaca.println("READY");
+            serialPlaca.write('R');
             ultimoEnvio = agora;
+            delay(200);  // janela de escuta obrigatória após envio
         }
     }
-    
-    delay(200);
-    
-    // Limpa o buffer serial
+
+    delay(300);
+
+    // Limpa lixo remanescente
     while (serialPlaca.available()) {
         serialPlaca.read();
     }
-    
-    printS("=== JOGO INICIADO ===");
+
+    // Prints só DEPOIS de sair do loop
+    if (meuTurno) {
+        Serial.println(F("Conectado! Voce ataca primeiro."));
+    } else {
+        Serial.println(F("Conectado! Adversario ataca primeiro."));
+    }
+    Serial.println(F("=== JOGO INICIADO ==="));
 }
 
 
@@ -843,10 +794,14 @@ void setup()
 
     // // Conecta com a outra placa (handshake)
     conectarPlacas();
+
+    lcd.clear();
+    lcd.print(" JOGO  INICIADO ");
+
+    delay(500);
 }
 
-void loop()
-{
+void loop(){
     if (fim) {
         return;
     }

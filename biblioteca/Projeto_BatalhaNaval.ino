@@ -45,10 +45,14 @@ void setup()
 
     // // Conecta com a outra placa (handshake)
     conectarPlacas();
+
+    lcd.clear();
+    lcd.print(" JOGO  INICIADO ");
+
+    delay(500);
 }
 
-void loop()
-{
+void loop(){
     if (fim) {
         return;
     }
