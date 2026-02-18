@@ -11,7 +11,6 @@
 //     char orientacao;
 // };
 
-
 Navios navios[4];
 int tamanhos[4] = {2, 3, 4, 5};
 int8_t tabuleiro[10][10]; 

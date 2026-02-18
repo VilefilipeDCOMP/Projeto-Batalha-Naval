@@ -5,7 +5,7 @@ SoftwareSerial serialPlaca(PIN_RX, PIN_TX); // RX=7, TX=8
 bool meuTurno = false;
 
 void conectarPlacas() {
-    serialPlaca.begin(4800);   // 4800 baud: mais confiável no SoftwareSerial do Tinkercad
+    serialPlaca.begin(2400);   // 4800 baud: mais confiável no SoftwareSerial do Tinkercad
     serialPlaca.listen();       // Garante que esta porta SoftwareSerial está ativa
 
     Serial.println(F("Aguardando conexao com a outra placa..."));
@@ -13,8 +13,6 @@ void conectarPlacas() {
     bool conectado = false;
     unsigned long ultimoEnvio = 0;
     unsigned int semente = analogRead(A5);  // pino flutuante para aleatoriedade
-
-    const bool isMaster = (PLAYER_ID == 1);
 
     // PROTOCOLO SIMPLIFICADO:
     //   'R' = READY    'A' = ACK
@@ -67,14 +65,20 @@ void conectarPlacas() {
 
 
 void enviarTiro(int x, int y) {
-    String mensagem = "TIRO:" + String(x) + "," + String(y);
-    serialPlaca.println(mensagem);
+    // String mensagem = "TIRO:" + String(x) + "," + String(y);
+    // serialPlaca.println(mensagem);
+
+    serialPlaca.print("TIRO:");
+    serialPlaca.print(x);
+    serialPlaca.print(',');
+    serialPlaca.println(y);
+
     
-    Serial.print("Tiro enviado -> (");
-    Serial.print(x);
-    Serial.print(",");
-    Serial.print(y);
-    printS(")");
+    // Serial.print("Tiro enviado -> (");
+    // Serial.print(x);
+    // Serial.print(",");
+    // Serial.print(y);
+    // printS(")");
 }
 
 int receberStatusDoTiro() {
@@ -104,8 +108,8 @@ int receberStatusDoTiro() {
         return -1;
     }
     
-    Serial.print("Resposta desconhecida: ");
-    Serial.print(resposta);
+    Serial.println("Resposta desconhecida: ");
+    Serial.println(resposta);
     return 0;
 }
 

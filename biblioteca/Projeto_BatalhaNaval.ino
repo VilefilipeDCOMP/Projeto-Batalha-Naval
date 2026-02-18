@@ -5,14 +5,6 @@
 
 #include <Wire.h>
 
-// #define UP 2
-// #define RIGHT 3
-// #define DOWN 4
-// #define LEFT 5
-// #define CRIVAR 6
-
-// int plx = 0, ply = 0;
-// int btn = 0;
 int hitou;
 bool fim = false;
 
@@ -27,34 +19,21 @@ void setup()
     pinMode(CRIVAR, INPUT_PULLUP);
 
     inicializarTela();
-    // cenaTitulo();
 
-    Jogador jogador = Jogador(0);
-
-    // 1: Posicionar navios
-    iniciarMapaVazio(); // DEBUG
-    CadastroCompletao();
-
-    // Mostrar na tela "Vez do jogador dois e repetir o processo de cadastro"
-    
-    // // funcao de sidnei
-    // registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
-    // //mostrarTabuleiro(); 
-
-    mostrarTabuleiro();
-
-    // // Conecta com a outra placa (handshake)
-    conectarPlacas();
-
-    lcd.clear();
-    lcd.print(" JOGO  INICIADO ");
-
-    delay(500);
+    iniciarJogo();
 }
 
 void loop(){
     if (fim) {
-        return;
+        cenaPontos();
+
+        btn = move();
+
+        if (btn == CRAVAR) {
+            iniciarJogo();
+        }
+        
+        // return;
     }
 
     if (meuTurno) {
@@ -72,6 +51,7 @@ void loop(){
         } else if (hitou == 5) {
             cenaErrou();
         } else if (hitou == -1) {
+            cenaAcertou();
             lcd.clear();
             lcd.setCursor(2, 0);
             lcd.print("VOCE  VENCEU!");
@@ -128,6 +108,34 @@ void loop(){
     //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
     //Estado atual vira espectador
     }
+}
+
+void iniciarJogo(){
+    hitou = 0;
+    fim = false;
+
+    // cenaTitulo();
+
+    Jogador jogador = Jogador(0);
+
+    // 1: Posicionar navios
+    iniciarMapaVazio();
+    CadastroCompletao();
+
+    // Mostrar na tela "Vez do jogador dois e repetir o processo de cadastro"
+    
+    // // funcao de sidnei
+    // registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
+
+    mostrarTabuleiro();
+
+    // // Conecta com a outra placa (handshake)
+    conectarPlacas();
+
+    lcd.clear();
+    lcd.print(" JOGO  INICIADO ");
+
+    delay(500);
 }
 
 void receberCoord() {
