@@ -5,14 +5,14 @@
 
 #include <Wire.h>
 
-#define UP 2
-#define RIGHT 3
-#define DOWN 4
-#define LEFT 5
-#define CRIVAR 6
+// #define UP 2
+// #define RIGHT 3
+// #define DOWN 4
+// #define LEFT 5
+// #define CRIVAR 6
 
-int plx = 0, ply = 0;
-int btn = 0;
+// int plx = 0, ply = 0;
+// int btn = 0;
 int hitou;
 bool fim = false;
 
@@ -129,10 +129,11 @@ void loop()
 
 int receberCoord() {
     plx = 0; ply = 0;
+  	btn = 0;
 
     //  Coord.
     //      (0,0)
-
+  
     lcd.setCursor(1, 0);
     lcd.print("Coord.");
 
@@ -142,8 +143,9 @@ int receberCoord() {
     lcd.print(",");
     lcd.print(0);
     lcd.print(")");
-
-    {
+  
+    Serial.print("DENTRO DE RECEBER COORD ");
+    do {
         btn = move();
         switch (btn){
             case UP:
@@ -169,13 +171,14 @@ int receberCoord() {
             default:
                 break;
             }
-        // cenaXY(plx, ply);
 
         lcd.setCursor(7, 1);
         lcd.print(plx);
         
         lcd.setCursor(9, 1);
         lcd.print(ply);
+      
+      	delay(25);
     } while (btn);  
 }
 

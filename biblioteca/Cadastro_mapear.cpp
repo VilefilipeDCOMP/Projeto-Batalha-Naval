@@ -25,6 +25,7 @@ void iniciarMapaVazio() {
             tabuleiro[i][j] = agua; // Zera tudo (água)
         }
     }
+    Serial.print("Mapa Pronto!");
 }
 
 void cadastro() {
@@ -71,6 +72,7 @@ void CadastroCompletao() {
         bool posicionado = false;
 
         while(!posicionado) {
+            Serial.print("Entrando no teclado para digitar");
             receberCoord(); // Vai retornar plx e ply global 
             // WARNING: Talvez bem talves nao altere as glovais, acho que altera
 
@@ -186,6 +188,10 @@ char escolherOrientacao() {
 
     char o = 'H';
     bool escolhendo = true;
+    
+    lcd.clear();
+    lcd.setCursor(0,0);
+    lcd.print("Orientacao:");
 
     while (escolhendo) {
 
@@ -199,13 +205,10 @@ char escolherOrientacao() {
             escolhendo = false;
         }
 
-        lcd.clear();
-        lcd.setCursor(0,0);
-        lcd.print("Orientacao:");
         lcd.setCursor(0,1);
         lcd.print(o);
 
-        delay(150);
+        delay(25);
     }
 
     return o;

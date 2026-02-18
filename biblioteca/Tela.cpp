@@ -3,7 +3,7 @@
 
 // Endereço I2C: No Tinkercad geralmente é 32 (0x20) ou 39 (0x27).
 // Tente 32 primeiro. Se não funcionar, mude para 0x27.
-LiquidCrystal_I2C lcd(0x20, 16, 2); 
+// LiquidCrystal_I2C lcd(0x20, 16, 2); 
 
 byte explosao_tela[8] = {
   B10001,
