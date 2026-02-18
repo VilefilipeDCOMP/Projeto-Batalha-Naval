@@ -25,7 +25,7 @@ void iniciarMapaVazio() {
             tabuleiro[i][j] = agua; // Zera tudo (água)
         }
     }
-    printS("Mapa Pronto!");
+    // printS("Mapa Pronto!");
 }
 
 void cadastro() {
@@ -68,11 +68,13 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
 void CadastroCompletao() {
     cadastro();
 
-    for(int i = 0; i < 4; i++){
+    // for(int i = 0; i < 4; i++){ // DEBUG: ALTEREI PARA DEBUG
+    for(int i = 0; i < 1; i++){
         bool posicionado = false;
 
         while(!posicionado) {
-            Serial.print(F("Entrando no teclado para digitar"));
+            // Serial.print(F("Entrando no teclado para digitar"));
+
             receberCoord(); // Vai retornar plx e ply global 
             // WARNING: Talvez bem talves nao altere as glovais, acho que altera
 
@@ -97,6 +99,7 @@ void CadastroCompletao() {
             }
         }
     }
+    lcd.clear();
     lcd.print(F("Navios Alinhados")); // BOTAR NO LCD
     delay(200);
 }

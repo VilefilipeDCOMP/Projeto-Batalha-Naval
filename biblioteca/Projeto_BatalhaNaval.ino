@@ -32,20 +32,18 @@ void setup()
     Jogador jogador = Jogador(0);
 
     // 1: Posicionar navios
-    iniciarMapaVazio();
+    iniciarMapaVazio(); // DEBUG
     CadastroCompletao();
 
     // Mostrar na tela "Vez do jogador dois e repetir o processo de cadastro"
     
-    // funcao de sidnei
-    registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
-    //mostrarTabuleiro(); 
+    // // funcao de sidnei
+    // registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
+    // //mostrarTabuleiro(); 
 
-    // Como é feita a comunicação direta entre as placas, não existe esse objeto.
-    // Jogador jogador2 = Jogador(1);
     mostrarTabuleiro();
 
-    // Conecta com a outra placa (handshake)
+    // // Conecta com a outra placa (handshake)
     conectarPlacas();
 }
 
@@ -58,7 +56,6 @@ void loop()
     if (meuTurno) {
         Serial.println("--- Seu turno! Escolha as coordenadas ---");
         lcd.clear();
-        cenaXY(plx, ply); // mostra inicial
 
         receberCoord();
 

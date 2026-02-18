@@ -131,7 +131,7 @@ void iniciarMapaVazio() {
             tabuleiro[i][j] = agua; // Zera tudo (água)
         }
     }
-    printS("Mapa Pronto!");
+    // printS("Mapa Pronto!");
 }
 
 void cadastro() {
@@ -174,11 +174,13 @@ void colocarNavioDeLadinho(int id, int linha, int coluna, char orientacao) {
 void CadastroCompletao() {
     cadastro();
 
-    for(int i = 0; i < 4; i++){
+    // for(int i = 0; i < 4; i++){ // DEBUG: ALTEREI PARA DEBUG
+    for(int i = 0; i < 1; i++){
         bool posicionado = false;
 
         while(!posicionado) {
-            Serial.print(F("Entrando no teclado para digitar"));
+            // Serial.print(F("Entrando no teclado para digitar"));
+
             receberCoord(); // Vai retornar plx e ply global 
             // WARNING: Talvez bem talves nao altere as glovais, acho que altera
 
@@ -203,6 +205,7 @@ void CadastroCompletao() {
             }
         }
     }
+    lcd.clear();
     lcd.print(F("Navios Alinhados")); // BOTAR NO LCD
     delay(200);
 }
@@ -335,50 +338,118 @@ SoftwareSerial serialPlaca(PIN_RX, PIN_TX); // RX=7, TX=8
 
 bool meuTurno = false;
 
+// void conectarPlacas() {
+//     serialPlaca.begin(9600);
+//     serialPlaca.setTimeout(50);
+    
+//     printS("Aguardando conexao com a outra placa...");
+
+//     String msg;
+//     msg.reserve(64);
+    
+//     bool conectado = false;
+//     bool jaEnvieiReady = false;
+//     unsigned long ultimoEnvio = 0;
+    
+//     while (!conectado) {
+//         // printS("Aguardando conexão...\n");
+//         unsigned long agora = millis();
+
+//         // O que envia
+//         if (agora - ultimoEnvio >= 500) {
+//             printS("[DEBUG] LOOP de ENVIO\n");
+//             serialPlaca.println("READY");
+//             ultimoEnvio = agora;
+//             if (!jaEnvieiReady) {
+//                 jaEnvieiReady = true;
+//             }
+//         }
+
+//         // O que recebe
+//         if (serialPlaca.available()) {
+//             printS("[DEBUG] Loop de RECEBENDO\n");
+
+//             msg = serialPlaca.readStringUntil('\n');
+//             msg.trim();
+
+//             Serial.println(msg);
+            
+//             if (msg == "READY") {
+//                 printS("[DEBUG] READY");
+//                 conectado = true;
+//                 if (jaEnvieiReady) {
+//                     meuTurno = true;
+//                     printS("Conectado! Voce ataca primeiro.");
+//                 } else {
+//                     meuTurno = false;
+//                     printS("Conectado! Adversario ataca primeiro.");
+//                 }
+//                 serialPlaca.println("READY");
+//             }
+//         }
+//     }
+    
+//     delay(200);
+    
+//     while (serialPlaca.available()) {
+//         serialPlaca.read();
+//     }
+    
+//     printS("=== JOGO INICIADO ===");
+// }
+
 void conectarPlacas() {
     serialPlaca.begin(9600);
     
     printS("Aguardando conexao com a outra placa...");
     
     bool conectado = false;
-    bool jaEnvieiReady = false;
     unsigned long ultimoEnvio = 0;
     
     while (!conectado) {
-        unsigned long agora = millis();
-        if (agora - ultimoEnvio >= 500) {
-            serialPlaca.println("READY");
-            ultimoEnvio = agora;
-            if (!jaEnvieiReady) {
-                jaEnvieiReady = true;
-            }
-        }
+        // Primeiro: SEMPRE tenta ler o que chegou (prioridade para receber)
+        printS("[DEBUG] RECEBENDO");
         if (serialPlaca.available()) {
             String msg = serialPlaca.readStringUntil('\n');
             msg.trim();
             
             if (msg == "READY") {
+                // Recebi READY do outro — respondo com ACK e conecto
+                delay(50); // Pequeno delay para o outro parar de transmitir
+                serialPlaca.println("ACK");
                 conectado = true;
-                if (jaEnvieiReady) {
-                    meuTurno = true;
-                    printS("Conectado! Voce ataca primeiro.");
-                } else {
-                    meuTurno = false;
-                    printS("Conectado! Adversario ataca primeiro.");
-                }
-                serialPlaca.println("READY");
+                meuTurno = false; // Quem recebe READY primeiro joga segundo
+                printS("Conectado! Adversario ataca primeiro.");
+            } 
+            else if (msg == "ACK") {
+                // Recebi ACK — o outro confirmou, estamos conectados
+                conectado = true;
+                meuTurno = true; // Quem enviou READY primeiro joga primeiro
+                printS("Conectado! Voce ataca primeiro.");
             }
+        }
+        
+        // Segundo: Envia READY periodicamente, mas com intervalo ALEATÓRIO
+        // para evitar colisão constante
+        printS("[DEBUG] ENVIANDO");
+        unsigned long agora = millis();
+        unsigned long intervalo = 800 + (millis() % 400); // 800-1200ms aleatório
+        if (!conectado && (agora - ultimoEnvio >= intervalo)) {
+            serialPlaca.println("READY");
+            ultimoEnvio = agora;
         }
     }
     
     delay(200);
     
+    // Limpa o buffer serial
     while (serialPlaca.available()) {
         serialPlaca.read();
     }
     
     printS("=== JOGO INICIADO ===");
 }
+
 
 void enviarTiro(int x, int y) {
     String mensagem = "TIRO:" + String(x) + "," + String(y);
@@ -759,20 +830,18 @@ void setup()
     Jogador jogador = Jogador(0);
 
     // 1: Posicionar navios
-    iniciarMapaVazio();
+    iniciarMapaVazio(); // DEBUG
     CadastroCompletao();
 
     // Mostrar na tela "Vez do jogador dois e repetir o processo de cadastro"
     
-    // funcao de sidnei
-    registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
-    //mostrarTabuleiro(); 
+    // // funcao de sidnei
+    // registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
+    // //mostrarTabuleiro(); 
 
-    // Como é feita a comunicação direta entre as placas, não existe esse objeto.
-    // Jogador jogador2 = Jogador(1);
     mostrarTabuleiro();
 
-    // Conecta com a outra placa (handshake)
+    // // Conecta com a outra placa (handshake)
     conectarPlacas();
 }
 
@@ -785,7 +854,6 @@ void loop()
     if (meuTurno) {
         Serial.println("--- Seu turno! Escolha as coordenadas ---");
         lcd.clear();
-        cenaXY(plx, ply); // mostra inicial
 
         receberCoord();
 
