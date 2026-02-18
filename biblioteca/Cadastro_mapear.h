@@ -9,6 +9,10 @@ struct Navios {
     char orientacao;
 };
 
+extern int plx;
+extern int ply;
+int move();
+
 void iniciarMapaVazio();
 void cadastro();
 bool podeColocar(int linha, int coluna, char orientacao, int tamanho);
@@ -18,3 +22,6 @@ void CadastroCompletao();
 void mostrarTabuleiro();
 bool todosNaviosAfundados();
 int registrarTiro(int x, int y);
+
+void receberCoord();
+char escolherOrientacao();

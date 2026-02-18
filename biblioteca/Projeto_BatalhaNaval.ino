@@ -44,49 +44,15 @@ void setup()
 void loop()
 {
     if (fim) {
-        // cabo
         return;
     }
 
     if (meuTurno) {
         Serial.println("--- Seu turno! Escolha as coordenadas ---");
         lcd.clear();
-        cenaXY(plx, ply);
+        cenaXY(plx, ply); // mostra inicial
 
-        // seleção de coordenadas
-        bool tiroConfirmado = false;
-        while (!tiroConfirmado) {
-            btn = move();
-
-            switch (btn) {
-                case UP:
-                    if (plx > 0) plx--;
-                    delay(200); // Debounce
-                    break;
-                case RIGHT:
-                    if (ply < 9) ply++;
-                    delay(200);
-                    break;
-                case DOWN:
-                    if (plx < 9) plx++;
-                    delay(200);
-                    break;
-                case LEFT:
-                    if (ply > 0) ply--;
-                    delay(200);
-                    break;
-                case CRIVAR:
-                    tiroConfirmado = true;
-                    delay(200);
-                    break;
-                default:
-                    break;
-            }
-
-            if (!tiroConfirmado) {
-                cenaXY(plx, ply);
-            }
-        }
+        receberCoord(); 
 
         enviarTiro(plx, ply);
 
