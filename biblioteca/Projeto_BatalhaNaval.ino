@@ -39,7 +39,6 @@ void setup()
 
     // Como é feita a comunicação direta entre as placas, não existe esse objeto.
     // Jogador jogador2 = Jogador(1);
-
 }
 
 
@@ -62,36 +61,91 @@ void loop()
     //     while(1);
     // }
     
+    // {
+    //     btn = move();
+    //     switch (btn){
+    //     case UP:
+    //         if(plx > 0) plx--;
+    //         break;
+        
+    //     case RIGHT:
+    //         if(ply < 9) ply++;
+    //         break;
+
+    //     case DOWN:
+    //         if(plx < 9) plx++;
+    //         break;
+
+    //     case LEFT:
+    //         if(ply > 0) ply--;
+    //         break;
+
+    //     case CRIVAR:
+    //         btn = 0;
+    //         break;
+            
+    //     default:
+    //         break;
+    //     }
+    //     cenaXY(plx, ply);
+    // } while (btn);
+
+    receberCoord()
+
+    //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
+    //Estado atual vira espectador
+}
+
+int receberCoord() {
+    plx = 0; ply = 0;
+
+    //  Coord.
+    //      (0,0)
+
+    lcd.setCursor(1, 0);
+    lcd.print("Coord.");
+
+    lcd.setCursor(6, 1);   
+    lcd.print("(");           
+    lcd.print(0);
+    lcd.print(",");
+    lcd.print(0);
+    lcd.print(")");
+
     {
         btn = move();
         switch (btn){
-        case UP:
-            if(plx > 0) plx--;
-            break;
-        
-        case RIGHT:
-            if(ply < 9) ply++;
-            break;
-
-        case DOWN:
-            if(plx < 9) plx++;
-            break;
-
-        case LEFT:
-            if(ply > 0) ply--;
-            break;
-
-        case CRIVAR:
-            btn = 0;
-            break;
+            case UP:
+                if(plx > 0) plx--;
+                break;
             
-        default:
-            break;
-        }
-        cenaXY(plx, ply);
-    } while (btn);
-    //Dá o tiro com as coordenadas (plx, ply) e manda essas coordenadas via serial para a outra placa verificar se mamou
-    //Estado atual vira espectador
+            case RIGHT:
+                if(ply < 9) ply++;
+                break;
+
+            case DOWN:
+                if(plx < 9) plx++;
+                break;
+
+            case LEFT:
+                if(ply > 0) ply--;
+                break;
+
+            case CRIVAR:
+                btn = 0;
+                break;
+                
+            default:
+                break;
+            }
+        // cenaXY(plx, ply);
+
+        lcd.setCursor(7, 1);
+        lcd.print(plx);
+        
+        lcd.setCursor(9, 1);
+        lcd.print(ply);
+    } while (btn);  
 }
 
 int move(){

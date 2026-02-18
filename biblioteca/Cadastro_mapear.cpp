@@ -71,39 +71,27 @@ void CadastroCompletao() {
         bool posicionado = false;
 
         while(!posicionado) {
-            Serial.println(" --- Cadastro ---");
-            Serial.print("Navio ");
-            Serial.print(i + 1);
-            Serial.print(" -> Tamanho = ");
-            Serial.print(navios[i].tamanho);
+            receberCoord(); // Vai retornar plx e ply global 
+            // WARNING: Talvez bem talves nao altere as glovais, acho que altera
 
-            Serial.println("\n Digite a linha (0 a 9):");
-            while(!Serial.available());
-            int linha = Serial.parseInt();
-            Serial.read(); // Limpa o buffer
-
-            Serial.println("Digite a coluna (0 a 9):");
-            while(!Serial.available());
-            int coluna = Serial.parseInt();
-            Serial.read();
-
-            Serial.println("Digite a orientacao (H/V):");
-            while(!Serial.available());
-            char orientacao = Serial.read();
-            Serial.read();
+            int linha = plx;
+            int coluna = ply;
+            char orientacao = escolherOrientacao();
 
             if(podeColocar(linha, coluna, orientacao, navios[i].tamanho)){
                 colocarNavioDeLadinho(i, linha, coluna, orientacao);
-                Serial.println("Navio Posicionado"); // BOTAR NO LCD
+                lcd.print("Navio Posicionado"); // BOTAR NO LCD
                 posicionado = true;
                 if(navios[i].tamanho != 5)
                     mostrarTabuleiro();
             } else {
-                Serial.println("Posicao Invalida ladrao"); // BOTAR NO LCD
+                lcd.clear();
+                lcd.print("Posicao Invalida"); // BOTAR NO LCD
             }
         }
     }
-    Serial.println("Todos os navios posicionados"); // BOTAR NO LCD
+    lcd.clear();
+    lcd.print("Navios Alinhados"); // BOTAR NO LCD
 }
 
 void mostrarTabuleiro() {
@@ -173,3 +161,53 @@ int registrarTiro(int x, int y) {
 // void loop() {
 //     // A lógica de turnos virá aqui depois
 // }
+
+int escolherPosicao() {
+    plx = 0;
+    ply = 0;
+
+    bool escolhendo = true;
+
+        receberCoord();
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Linha: ");
+        lcd.print(plx);
+
+        lcd.setCursor(0,1);
+        lcd.print("Coluna: ");
+        lcd.print(ply);
+
+        delay(150);
+    
+}
+
+char escolherOrientacao() {
+
+    char o = 'H';
+    bool escolhendo = true;
+
+    while (escolhendo) {
+
+        btn = move();
+
+        if (btn == UP || btn == DOWN) {
+            o = (o == 'H') ? 'V' : 'H'; // ternario sagaz LIMONATIONS -> muda a orientação cada vez q vc aperta
+        }
+
+        if (btn == CRIVAR) {
+            escolhendo = false;
+        }
+
+        lcd.clear();
+        lcd.setCursor(0,0);
+        lcd.print("Orientacao:");
+        lcd.setCursor(0,1);
+        lcd.print(o);
+
+        delay(150);
+    }
+
+    return o;
+}
+
