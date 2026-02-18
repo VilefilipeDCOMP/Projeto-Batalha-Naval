@@ -70,6 +70,7 @@ void cenaTitulo() {
     cenaAtaque();
     
     delay(500);
+    lcd.clear();
 }
 
 void cenaAtaque() {
@@ -107,6 +108,8 @@ void cenaPontos() {
   lcd.print("111");
 
   delay(3500);
+
+  lcd.clear();
 }
 
 void cenaXY(int linha, int coluna) {
@@ -171,6 +174,7 @@ void cenaAcertou() {
   lcd.setCursor(2, 0);
   lcd.print("ALVO  ABATIDO");
   delay(1000);
+  lcd.clear();
 }
 
 void cenaErrou() {
@@ -195,6 +199,7 @@ void cenaErrou() {
   lcd.setCursor(0, 0);
   lcd.print("ERROU MEU CHEFE!");
   delay(1000);
+  lcd.clear();
 }
 
 // ---------------------------------------------

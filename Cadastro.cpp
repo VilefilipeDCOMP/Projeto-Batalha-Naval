@@ -105,9 +105,9 @@ void CadastroCompletao(){
 
         while(!posicionado) {
             Serial.println(" --- Cadastro ---");
-            Serial.print("Navio ");
+            printS("Navio ");
             Serial.print(i);
-            Serial.print(" -> Tamanho = ");
+            printS(" -> Tamanho = ");
             Serial.print(navios[i].tamanho);
 
             Serial.println("\n Digite a linha:");

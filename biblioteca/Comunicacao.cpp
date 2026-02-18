@@ -1,5 +1,4 @@
 #include "Comunicacao.h"
-#include <Arduino.h>
 
 SoftwareSerial serialPlaca(PIN_RX, PIN_TX); // RX=7, TX=8
 
@@ -8,7 +7,7 @@ bool meuTurno = false;
 void conectarPlacas() {
     serialPlaca.begin(9600);
     
-    Serial.println("Aguardando conexao com a outra placa...");
+    printS("Aguardando conexao com a outra placa...");
     
     bool conectado = false;
     bool jaEnvieiReady = false;
@@ -31,10 +30,10 @@ void conectarPlacas() {
                 conectado = true;
                 if (jaEnvieiReady) {
                     meuTurno = true;
-                    Serial.println("Conectado! Voce ataca primeiro.");
+                    printS("Conectado! Voce ataca primeiro.");
                 } else {
                     meuTurno = false;
-                    Serial.println("Conectado! Adversario ataca primeiro.");
+                    printS("Conectado! Adversario ataca primeiro.");
                 }
                 serialPlaca.println("READY");
             }
@@ -47,7 +46,7 @@ void conectarPlacas() {
         serialPlaca.read();
     }
     
-    Serial.println("=== JOGO INICIADO ===");
+    printS("=== JOGO INICIADO ===");
 }
 
 void enviarTiro(int x, int y) {
@@ -58,16 +57,16 @@ void enviarTiro(int x, int y) {
     Serial.print(x);
     Serial.print(",");
     Serial.print(y);
-    Serial.println(")");
+    printS(")");
 }
 
 int receberStatusDoTiro() {
-    Serial.println("Aguardando resposta do tiro...");
+    printS("Aguardando resposta do tiro...");
     
     unsigned long inicio = millis();
     while (!serialPlaca.available()) {
         if (millis() - inicio > 30000) {
-            Serial.println("TIMEOUT! Sem resposta da outra placa.");
+            printS("TIMEOUT! Sem resposta da outra placa.");
             return -1;
         }
     }
@@ -76,30 +75,30 @@ int receberStatusDoTiro() {
     resposta.trim();
     
     if (resposta == "HIT") {
-        Serial.println("Status: ACERTOU!");
+        printS("Status: ACERTOU!");
         return 6;
     } 
     else if (resposta == "MISS") {
-        Serial.println("Status: ERROU!");
+        printS("Status: ERROU!");
         return 5;
     } 
     else if (resposta == "WIN") {
-        Serial.println("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
+        printS("Status: VOCE VENCEU! Todos os navios inimigos foram afundados!");
         return -1;
     }
     
     Serial.print("Resposta desconhecida: ");
-    Serial.println(resposta);
+    Serial.print(resposta);
     return 0;
 }
 
 bool receberTiroAdversario(int &x, int &y) {
-    Serial.println("Aguardando tiro do adversario...");
+    printS("Aguardando tiro do adversario...");
 
     unsigned long inicio = millis();
     while (!serialPlaca.available()) {
         if (millis() - inicio > 60000) {
-            Serial.println("TIMEOUT! Adversario demorou demais.");
+            printS("TIMEOUT! Adversario demorou demais.");
             return false;
         }
     }
@@ -119,14 +118,14 @@ bool receberTiroAdversario(int &x, int &y) {
             Serial.print(x);
             Serial.print(",");
             Serial.print(y);
-            Serial.println(")");
+            printS(")");
             
             return true;
         }
     }
     
     Serial.print("Mensagem invalida recebida: ");
-    Serial.println(msg);
+    Serial.print(msg);
     return false;
 }
 
@@ -134,18 +133,18 @@ void enviarStatusDoTiro(int resultado) {
     if (resultado == 6) {
         if (todosNaviosAfundados()) {
             serialPlaca.println("WIN");
-            Serial.println("Enviado: WIN - Todos os seus navios foram afundados!");
+            printS("Enviado: WIN - Todos os seus navios foram afundados!");
         } else {
             serialPlaca.println("HIT");
-            Serial.println("Enviado: HIT");
+            printS("Enviado: HIT");
         }
     } 
     else if (resultado == 5) {
         serialPlaca.println("MISS");
-        Serial.println("Enviado: MISS");
+        printS("Enviado: MISS");
     }
     else {
         serialPlaca.println("MISS");
-        Serial.println("Enviado: MISS (tiro invalido/repetido)");
+        printS("Enviado: MISS (tiro invalido/repetido)");
     }
 }

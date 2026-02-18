@@ -8,6 +8,7 @@ void iniciarMapaVazio(){
             tabuleiro[i][j] = hagata;
         }
     }
+    lcd.print("Mapa Pronto!");
 };
 
 bool todosNaviosAfundados(){

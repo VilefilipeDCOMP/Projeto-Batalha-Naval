@@ -14,7 +14,7 @@
 
 Navios navios[4];
 int tamanhos[4] = {2, 3, 4, 5};
-int tabuleiro[10][10]; 
+int8_t tabuleiro[10][10]; 
 
 const int navio = 1;
 const int agua = 0;
@@ -25,7 +25,7 @@ void iniciarMapaVazio() {
             tabuleiro[i][j] = agua; // Zera tudo (água)
         }
     }
-    Serial.print("Mapa Pronto!");
+    printS("Mapa Pronto!");
 }
 
 void cadastro() {
@@ -72,42 +72,47 @@ void CadastroCompletao() {
         bool posicionado = false;
 
         while(!posicionado) {
-            Serial.print("Entrando no teclado para digitar");
+            Serial.print(F("Entrando no teclado para digitar"));
             receberCoord(); // Vai retornar plx e ply global 
             // WARNING: Talvez bem talves nao altere as glovais, acho que altera
 
             int linha = plx;
             int coluna = ply;
             char orientacao = escolherOrientacao();
+            lcd.clear();
 
             if(podeColocar(linha, coluna, orientacao, navios[i].tamanho)){
                 colocarNavioDeLadinho(i, linha, coluna, orientacao);
-                lcd.print("Navio Posicionado"); // BOTAR NO LCD
+
                 posicionado = true;
-                if(navios[i].tamanho != 5)
+                if(navios[i].tamanho != 5) {
+                    lcd.print(F("Navio Colocado")); // BOTAR NO LCD
                     mostrarTabuleiro();
+                }
+                delay(200);
             } else {
-                lcd.clear();
-                lcd.print("Posicao Invalida"); // BOTAR NO LCD
+
+                lcd.print(F("Posicao Invalida")); // BOTAR NO LCD
+                delay(200);
             }
         }
     }
-    lcd.clear();
-    lcd.print("Navios Alinhados"); // BOTAR NO LCD
+    lcd.print(F("Navios Alinhados")); // BOTAR NO LCD
+    delay(200);
 }
 
 void mostrarTabuleiro() {
-    Serial.println("   0 1 2 3 4 5 6 7 8 9");
+    Serial.println("\n   0 1 2 3 4 5 6 7 8 9");
     for (int i = 0; i < 10; i++) {
         Serial.print(i);
         Serial.print("  ");
 
         for (int j = 0; j < 10; j++) {
             if (tabuleiro[i][j] == 0) {
-                Serial.print("~ ");   // água
+                Serial.print(F("~ "));   // água
             } else {
                 Serial.print(tabuleiro[i][j]);
-                Serial.print(" ");
+                Serial.print(F(" "));
             }
         }
         Serial.println();
@@ -133,12 +138,12 @@ int registrarTiro(int x, int y) {
         // Se acertou um navio (valores de 1 a 4)
         if(tabuleiro[x][y] > 0 && tabuleiro[x][y] < 5){
             tabuleiro[x][y] = 6; // navio atingido
-            Serial.println("Fez uma pra Deus ver pelo menos!");
+            Serial.println(F("Fez uma pra Deus ver pelo menos!"));
             return 6;
         }
         else if (tabuleiro[x][y] == 0) {
             tabuleiro[x][y] = 5; // tiro na agua
-            Serial.println("Rapaz, tu eh ruim viu, errou o tiro");
+            Serial.println(F("Rapaz, tu eh ruim viu, errou o tiro"));
             return 5;
         }
     }
@@ -211,6 +216,7 @@ char escolherOrientacao() {
         delay(25);
     }
 
+    lcd.clear();
     return o;
 }
 

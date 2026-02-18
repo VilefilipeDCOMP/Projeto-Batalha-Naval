@@ -27,13 +27,16 @@ void setup()
     pinMode(CRIVAR, INPUT_PULLUP);
 
     inicializarTela();
-    cenaTitulo();
+    // cenaTitulo();
 
     Jogador jogador = Jogador(0);
 
     // 1: Posicionar navios
     iniciarMapaVazio();
     CadastroCompletao();
+
+    // Mostrar na tela "Vez do jogador dois e repetir o processo de cadastro"
+    
     // funcao de sidnei
     registrarTiro(5, 5); // OS parametros vao vir da função de sidnei e isso vai pro loop dps
     //mostrarTabuleiro(); 
@@ -46,7 +49,6 @@ void setup()
     conectarPlacas();
 }
 
-
 void loop()
 {
     if (fim) {
@@ -58,7 +60,7 @@ void loop()
         lcd.clear();
         cenaXY(plx, ply); // mostra inicial
 
-        receberCoord()
+        receberCoord();
 
         enviarTiro(plx, ply);
 
@@ -127,13 +129,14 @@ void loop()
     }
 }
 
-int receberCoord() {
+void receberCoord() {
     plx = 0; ply = 0;
   	btn = 0;
 
     //  Coord.
     //      (0,0)
-  
+    
+    lcd.clear();
     lcd.setCursor(1, 0);
     lcd.print("Coord.");
 
@@ -144,7 +147,6 @@ int receberCoord() {
     lcd.print(0);
     lcd.print(")");
   
-    Serial.print("DENTRO DE RECEBER COORD ");
     do {
         btn = move();
         switch (btn){
@@ -167,7 +169,7 @@ int receberCoord() {
             case CRIVAR:
                 btn = 0;
                 break;
-                
+
             default:
                 break;
             }
@@ -179,7 +181,7 @@ int receberCoord() {
         lcd.print(ply);
       
       	delay(25);
-    } while (btn);  
+    } while (btn);
 }
 
 int move() {
@@ -194,5 +196,5 @@ int move() {
     } else if (digitalRead(CRIVAR) == LOW) {
         return CRIVAR;
     }
-    return 0;
+     //return 0; Algum imbecil botou esse return 0 aqui animal estupido (pode ter sido eu)
 }

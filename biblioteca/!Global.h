@@ -4,6 +4,9 @@
 #define LEFT 5
 #define CRIVAR 6
 
+// ##define F(x) F(x)
+#define printS(x) Serial.print(F(x))
+
 int plx = 0, ply = 0;
 int btn = 0;
 LiquidCrystal_I2C lcd(0x20, 16, 2); 
