@@ -253,7 +253,7 @@ void mostrarTabuleiroTiro() {
 bool todosNaviosAfundados() {
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
-            if(tabuleiroBarco[i][j] == navio) return false; // Se achar qualquer '1', o jogo continua
+            if (((tabuleiroBarco[i][j] == 1) || (tabuleiroBarco[i][j] == 2)) || ((tabuleiroBarco[i][j] == 3) || (tabuleiroBarco[i][j] == 4))) return false; // Se achar qualquer '1', '2', '3' ou '4', o jogo continua
         }
     }
     return true; // Ganhou, parabéns moral
@@ -541,16 +541,11 @@ int lerRecordes(int jogador_id) {
     int enderenco_inicial{sizeof(int) * jogador_id};
     
     EEPROM.get(enderenco_inicial, valor_lido);
-    
-    Serial.println(valor_lido);
 
     return valor_lido;
 }
 
 int salvarNovaVitoria(int jogador_id) {
-    // vitorias_jogador = lerRecordes(jogador); 
-    // EEPROM[jogador_id] += 1;
-
     int valor_atual{lerRecordes(jogador_id)};
     int enderenco_inicial{sizeof(int) * jogador_id};
 

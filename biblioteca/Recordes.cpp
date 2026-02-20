@@ -11,16 +11,11 @@ int lerRecordes(int jogador_id) {
     int enderenco_inicial{sizeof(int) * jogador_id};
     
     EEPROM.get(enderenco_inicial, valor_lido);
-    
-    Serial.println(valor_lido);
 
     return valor_lido;
 }
 
 int salvarNovaVitoria(int jogador_id) {
-    // vitorias_jogador = lerRecordes(jogador); 
-    // EEPROM[jogador_id] += 1;
-
     int valor_atual{lerRecordes(jogador_id)};
     int enderenco_inicial{sizeof(int) * jogador_id};
 

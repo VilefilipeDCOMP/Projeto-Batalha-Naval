@@ -147,7 +147,7 @@ void mostrarTabuleiroTiro() {
 bool todosNaviosAfundados() {
     for(int i = 0; i < 10; i++){
         for(int j = 0; j < 10; j++){
-            if(tabuleiroBarco[i][j] == navio) return false; // Se achar qualquer '1', o jogo continua
+            if (((tabuleiroBarco[i][j] == 1) || (tabuleiroBarco[i][j] == 2)) || ((tabuleiroBarco[i][j] == 3) || (tabuleiroBarco[i][j] == 4))) return false; // Se achar qualquer '1', '2', '3' ou '4', o jogo continua
         }
     }
     return true; // Ganhou, parabéns moral
