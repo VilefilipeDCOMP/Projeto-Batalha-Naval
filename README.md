@@ -96,7 +96,7 @@ Equipe responsável pelo desenvolvimento:
 
 - **Sidnei**: Lógica de conexão e envio de dados (`conectarPlacas`, `enviarTiro`).
 - **Danilo**: Gerenciamento do mapa e validação de vitórias (`iniciarMapaVazio`, `verificarVitoria`).
-- **Arthur**: Posicionamento e validação de navios (`escolherNavio`, `verificarPosicaoValida`).
+- **Arthur**: Posicionamento e validação de navios (`colocarNavioDeLadinho`, `CadastroCompletao`).
 - **Filipe**: Persistência de dados e Recordes (`salvarNovaVitoria`, `EEPROM`).
 - **Brunão**: Interface de controle e hardware (`lerDirecional`, `botoes`).
 
